@@ -1,4 +1,3 @@
-Server · JS
 require('dotenv').config();
 const express = require('express');
 const cookieSession = require('cookie-session');
