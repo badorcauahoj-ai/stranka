@@ -1,147 +1,135 @@
-let editingId = null;
+// admin.js — Admin login a CRUD nad výhrami
 
-async function renderAdminList() {
-  const wrap = document.getElementById('adminList');
-  const items = await API.getShopItems();
-  wrap.innerHTML = '';
+let editingItemId = null;
 
-  if (items.length === 0) {
-    wrap.innerHTML = `<div class="empty-state"><strong>Žádné výhry</strong>Přidej první výhru výše.</div>`;
+function initAdmin() {
+  const form = document.getElementById('admin-item-form');
+  const fileInput = document.getElementById('admin-img-file');
+  const fileBtn = document.getElementById('admin-file-btn');
+  const fileNotice = document.getElementById('admin-file-notice');
+
+  if (fileBtn && fileInput) {
+    fileBtn.onclick = () => fileInput.click();
+    fileInput.onchange = () => {
+      if (fileInput.files.length > 0) {
+        fileNotice.textContent = 'Vybrán: ' + fileInput.files[0].name;
+      } else {
+        fileNotice.textContent = '';
+      }
+    };
+  }
+
+  if (form) {
+    form.onsubmit = async (e) => {
+      e.preventDefault();
+      const name = document.getElementById('admin-name').value.trim();
+      const price = parseInt(document.getElementById('admin-price').value, 10);
+      const category = document.getElementById('admin-cat').value;
+      const desc = document.getElementById('admin-desc').value.trim();
+      const icon = document.getElementById('admin-icon').value.trim() || '🎁';
+      let img = document.getElementById('admin-img-url').value.trim();
+
+      if (!name || isNaN(price)) {
+        alert('Vyplňte prosím název a platnou cenu.');
+        return;
+      }
+
+      // Pokud uživatel vybral soubor, nahrajeme ho na server
+      if (fileInput && fileInput.files.length > 0) {
+        fileNotice.textContent = 'Nahrávám obrázek...';
+        const uploadRes = await api.adminUploadImage(fileInput.files[0]);
+        if (uploadRes && uploadRes.url) {
+          img = uploadRes.url;
+        } else {
+          alert('Chyba při nahrávání obrázku: ' + (uploadRes?.error || 'Neznámá chyba'));
+          fileNotice.textContent = '';
+          return;
+        }
+      }
+
+      const itemData = { name, price, category, desc, icon, img };
+
+      let result;
+      if (editingItemId) {
+        result = await api.adminUpdateItem(editingItemId, itemData);
+      } else {
+        result = await api.adminAddItem(itemData);
+      }
+
+      if (result && result.success) {
+        resetAdminForm();
+        refreshAllData();
+      } else {
+        alert('Chyba při ukládání výhry: ' + (result?.error || 'Ujistěte se, že jste přihlášeni jako admin.'));
+      }
+    };
+  }
+}
+
+async function handleAdminLogin() {
+  const user = document.getElementById('admin-user').value.trim();
+  const pass = document.getElementById('admin-pass').value.trim();
+  const errEl = document.getElementById('admin-login-err');
+
+  if (!user || !pass) {
+    if (errEl) errEl.textContent = 'Vyplň jméno i heslo!';
     return;
   }
 
-  items.forEach(i => {
-    const row = document.createElement('div');
-    row.className = 'admin-row';
-    row.innerHTML = `
-      <div class="a-thumb">${thumbHtml(i.img)}</div>
-      <div><div class="a-name">${i.name}</div><div class="a-type">${i.type}</div></div>
-      <div class="a-price">${i.price.toLocaleString('cs-CZ')} KK</div>
-      <div class="a-stock">${i.stock ? i.stock + 'ks' : '∞'}</div>
-      <div class="admin-actions">
-        <button class="a-btn" data-edit="${i.id}">Upravit</button>
-        <button class="a-btn danger" data-del="${i.id}">Smazat</button>
-      </div>
-    `;
-    wrap.appendChild(row);
-  });
-
-  wrap.querySelectorAll('[data-edit]').forEach(b => {
-    b.addEventListener('click', async () => {
-      const items = await API.getShopItems();
-      startEdit(items.find(x => x.id === +b.dataset.edit));
-    });
-  });
-  wrap.querySelectorAll('[data-del]').forEach(b => {
-    b.addEventListener('click', async () => {
-      await API.adminDeleteItem(+b.dataset.del);
-      renderAdminList();
-      renderShop();
-    });
-  });
-}
-
-function startEdit(item) {
-  if (!item) return;
-  editingId = item.id;
-  document.getElementById('fName').value = item.name;
-  document.getElementById('fType').value = item.type;
-  document.getElementById('fPrice').value = item.price;
-  document.getElementById('fImg').value = item.img || '';
-  document.getElementById('fStock').value = item.stock || '';
-  document.getElementById('fSubmit').textContent = 'Uložit změny';
-  document.getElementById('fCancelEdit').style.display = 'block';
-
-  const previewWrap = document.getElementById('fImgPreviewWrap');
-  const preview = document.getElementById('fImgPreview');
-  if (item.img) {
-    preview.src = item.img;
-    previewWrap.style.display = 'block';
+  const res = await api.adminLogin(user, pass);
+  if (res && res.success) {
+    if (errEl) errEl.textContent = '';
+    closeAdminModal();
+    refreshAllData();
   } else {
-    previewWrap.style.display = 'none';
+    if (errEl) errEl.textContent = res?.error || 'Špatné jméno nebo heslo!';
   }
-
-  document.querySelector('.admin-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
-function resetForm() {
-  editingId = null;
-  ['fName', 'fPrice', 'fImg', 'fStock'].forEach(id => document.getElementById(id).value = '');
-  document.getElementById('fImgFile').value = '';
-  document.getElementById('fImgPreviewWrap').style.display = 'none';
-  document.getElementById('fType').value = 'Losování';
-  document.getElementById('fSubmit').textContent = 'Přidat výhru';
-  document.getElementById('fCancelEdit').style.display = 'none';
+async function handleAdminLogout() {
+  await api.adminLogout();
+  refreshAllData();
 }
 
-function initImageUpload() {
-  document.getElementById('fImgFile').addEventListener('change', async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
+function startEditItem(item) {
+  editingItemId = item.id;
+  document.getElementById('admin-form-title').textContent = 'Upravit výhru';
+  document.getElementById('admin-name').value = item.name || '';
+  document.getElementById('admin-price').value = item.price || 0;
+  document.getElementById('admin-cat').value = item.category || 'Hry / Klíče';
+  document.getElementById('admin-desc').value = item.desc || '';
+  document.getElementById('admin-icon').value = item.icon || '';
+  document.getElementById('admin-img-url').value = item.img || '';
 
-    const uploading = document.getElementById('fImgUploading');
-    const previewWrap = document.getElementById('fImgPreviewWrap');
-    const preview = document.getElementById('fImgPreview');
+  const cancelBtn = document.getElementById('admin-cancel-edit');
+  if (cancelBtn) cancelBtn.style.display = 'inline-block';
 
-    uploading.style.display = 'block';
-    previewWrap.style.display = 'none';
-
-    const result = await API.adminUploadImage(file);
-
-    uploading.style.display = 'none';
-
-    if (!result.ok) {
-      alert(result.error || 'Nahrání obrázku se nezdařilo');
-      e.target.value = '';
-      return;
-    }
-
-    document.getElementById('fImg').value = result.url;
-    preview.src = result.url;
-    previewWrap.style.display = 'block';
-  });
+  // Scroll nahoru k formuláři
+  document.getElementById('admin-item-form')?.scrollIntoView({ behavior: 'smooth' });
 }
 
-function initAdminForm() {
-  document.getElementById('fCancelEdit').addEventListener('click', resetForm);
+function resetAdminForm() {
+  editingItemId = null;
+  const form = document.getElementById('admin-item-form');
+  if (form) form.reset();
 
-  document.getElementById('fSubmit').addEventListener('click', async () => {
-    const name = document.getElementById('fName').value.trim();
-    const type = document.getElementById('fType').value;
-    const price = parseInt(document.getElementById('fPrice').value) || 0;
-    const img = document.getElementById('fImg').value.trim();
-    const stockVal = document.getElementById('fStock').value;
-    const stock = stockVal ? parseInt(stockVal) : null;
-    if (!name || !price) return;
+  const title = document.getElementById('admin-form-title');
+  if (title) title.textContent = 'Přidat novou výhru';
 
-    const item = { name, type, price, img, stock };
-    if (editingId) {
-      await API.adminUpdateItem(editingId, item);
+  const cancelBtn = document.getElementById('admin-cancel-edit');
+  if (cancelBtn) cancelBtn.style.display = 'none';
+
+  const fileNotice = document.getElementById('admin-file-notice');
+  if (fileNotice) fileNotice.textContent = '';
+}
+
+async function deleteAdminItem(id) {
+  if (confirm('Opravdu chceš tuto výhru smazat?')) {
+    const res = await api.adminDeleteItem(id);
+    if (res && res.success) {
+      refreshAllData();
     } else {
-      await API.adminCreateItem(item);
+      alert('Chyba při mazání: ' + (res?.error || 'Neznámá chyba'));
     }
-    resetForm();
-    renderAdminList();
-    renderShop();
-  });
-}
-
-function initAdminLogin() {
-  const overlay = document.getElementById('adminModalOverlay');
-
-  document.getElementById('adminLoginBtn').addEventListener('click', async () => {
-    const u = document.getElementById('adminUser').value.trim();
-    const p = document.getElementById('adminPass').value;
-    const ok = await API.adminLogin(u, p);
-
-    if (ok) {
-      overlay.classList.remove('open');
-      document.getElementById('adminError').classList.remove('show');
-      document.getElementById('adminTab').style.display = 'inline-block';
-      document.getElementById('adminTab').click();
-      renderAdminList();
-    } else {
-      document.getElementById('adminError').classList.add('show');
-    }
-  });
+  }
 }
