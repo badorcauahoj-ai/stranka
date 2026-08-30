@@ -51,15 +51,55 @@ function startEdit(item) {
   document.getElementById('fStock').value = item.stock || '';
   document.getElementById('fSubmit').textContent = 'Uložit změny';
   document.getElementById('fCancelEdit').style.display = 'block';
+
+  const previewWrap = document.getElementById('fImgPreviewWrap');
+  const preview = document.getElementById('fImgPreview');
+  if (item.img) {
+    preview.src = item.img;
+    previewWrap.style.display = 'block';
+  } else {
+    previewWrap.style.display = 'none';
+  }
+
   document.querySelector('.admin-form').scrollIntoView({ behavior: 'smooth', block: 'center' });
 }
 
 function resetForm() {
   editingId = null;
   ['fName', 'fPrice', 'fImg', 'fStock'].forEach(id => document.getElementById(id).value = '');
+  document.getElementById('fImgFile').value = '';
+  document.getElementById('fImgPreviewWrap').style.display = 'none';
   document.getElementById('fType').value = 'Losování';
   document.getElementById('fSubmit').textContent = 'Přidat výhru';
   document.getElementById('fCancelEdit').style.display = 'none';
+}
+
+function initImageUpload() {
+  document.getElementById('fImgFile').addEventListener('change', async (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const uploading = document.getElementById('fImgUploading');
+    const previewWrap = document.getElementById('fImgPreviewWrap');
+    const preview = document.getElementById('fImgPreview');
+
+    uploading.style.display = 'block';
+    previewWrap.style.display = 'none';
+
+    const result = await API.adminUploadImage(file);
+
+    uploading.style.display = 'none';
+
+    if (!result.ok) {
+      alert(result.error || 'Nahrání obrázku se nezdařilo');
+      e.target.value = '';
+      return;
+    }
+
+    document.getElementById('fImg').value = result.url;
+    preview.src = result.url;
+    previewWrap.style.display = 'block';
+  });
 }
 
 function initAdminForm() {

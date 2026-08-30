@@ -5,6 +5,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAdminModal();
   initAdminLogin();
   initAdminForm();
+  initImageUpload();
   initShopFilters();
 
   document.getElementById('searchInput').addEventListener('input', e => renderLeaderboard(e.target.value));

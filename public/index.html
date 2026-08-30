@@ -159,7 +159,15 @@
           <select id="fType"><option>Losování</option><option>Okamžitá položka</option></select>
         </div>
         <div class="field"><label>Cena (KK)</label><input id="fPrice" type="number" placeholder="500" /></div>
-        <div class="field"><label>URL obrázku (nepovinné)</label><input id="fImg" placeholder="https://…" /></div>
+        <div class="field">
+          <label>Obrázek</label>
+          <input id="fImgFile" type="file" accept="image/*" />
+          <input id="fImg" type="hidden" />
+          <div id="fImgPreviewWrap" style="margin-top:8px;display:none;">
+            <img id="fImgPreview" style="width:64px;height:64px;object-fit:cover;border-radius:8px;border:1px solid var(--line-strong);" />
+          </div>
+          <div id="fImgUploading" style="display:none;font-size:.75rem;color:var(--text-1);margin-top:6px;">Nahrávám…</div>
+        </div>
         <div class="field"><label>Sklad (prázdné = neomezeno)</label><input id="fStock" type="number" placeholder="10" /></div>
       </div>
       <div style="display:flex;gap:10px;margin-top:8px;">
@@ -177,9 +185,10 @@
   <div>© 2026 <strong style="color:var(--text-0)">tyblaho69</strong> · KK žebříček</div>
   <div style="display:flex;gap:20px;">
     <a href="https://kick.com/tyblaho69" target="_blank" rel="noopener">kick.com/tyblaho69</a>
-    <a href="#" target="_blank" rel="noopener">instagram</a>
+    <a href="https://www.instagram.com/blaha.o/" target="_blank" rel="noopener">instagram</a>
   </div>
 </footer>
+<div style="text-align:center;padding:14px 20px 28px;color:var(--text-2);font-size:.68rem;opacity:.6;">made by bador</div>
 
 <script src="/js/api.js"></script>
 <script src="/js/ui.js"></script>

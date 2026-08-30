@@ -50,6 +50,17 @@ const API = {
     return res.ok;
   },
 
+  async adminUploadImage(file) {
+    const formData = new FormData();
+    formData.append('image', file);
+    const res = await fetch('/api/admin/upload', {
+      method: 'POST',
+      body: formData,
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, ...data };
+  },
+
   async adminCreateItem(item) {
     const res = await fetch('/api/admin/items', {
       method: 'POST',

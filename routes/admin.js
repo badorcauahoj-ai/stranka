@@ -1,4 +1,5 @@
 const express = require('express');
+const multer = require('multer');
 const router = express.Router();
 const store = require('../data/store');
 
@@ -6,6 +7,30 @@ function requireAdmin(req, res, next) {
   if (!req.session.is_admin) return res.status(401).json({ error: 'Nejsi přihlášen jako admin' });
   next();
 }
+
+// Nahrávání obrázků - soubor jde přímo do paměti a ukládá se jako
+// base64 do databáze (žádný souborový storage, žádný zásah do Railway).
+// Omezeno na 3 MB a jen obrázkové typy.
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 3 * 1024 * 1024 },
+  fileFilter: (req, file, cb) => {
+    if (!file.mimetype.startsWith('image/')) {
+      return cb(new Error('Soubor musí být obrázek'));
+    }
+    cb(null, true);
+  },
+});
+
+router.post('/upload', requireAdmin, (req, res) => {
+  upload.single('image')(req, res, (err) => {
+    if (err) return res.status(400).json({ error: err.message || 'Nahrání se nezdařilo' });
+    if (!req.file) return res.status(400).json({ error: 'Žádný soubor nebyl odeslán' });
+
+    const dataUri = `data:${req.file.mimetype};base64,${req.file.buffer.toString('base64')}`;
+    res.json({ ok: true, url: dataUri });
+  });
+});
 
 router.post('/login', (req, res) => {
   const { username, password } = req.body;

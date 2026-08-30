@@ -44,6 +44,22 @@ tyblaho69/
   data/store.js          — datová vrstva (zatím v paměti procesu)
 ```
 
+## Nahrávání obrázků v admin panelu
+
+V administraci jde teď nahrát obrázek přímo ze zařízení (tlačítko
+"Obrázek" ve formuláři pro výhru) — nemusíš nikam kopírovat URL ani
+sahat do Railway. Obrázek se pošle na `/api/admin/upload`, převede se
+na base64 a uloží se rovnou do databáze (sloupec `img` u položky).
+
+**Limity, se kterými počítej:**
+- Max. velikost souboru: **3 MB** (dá se zvýšit v `routes/admin.js`,
+  hledej `fileSize`).
+- Obrázky se ukládají jako text (base64) přímo v Postgresu — pro pár
+  desítek položek v shopu je to v pohodě, ale není to řešení na
+  stovky velkých obrázků (databáze by zbytečně nabobtnala). Kdyby
+  časem shop narostl, dává smysl přejít na dedikovaný storage
+  (Cloudinary, S3, Railway volume) — ale to řeš, až to bude potřeba.
+
 ## Databáze — už napojená na Postgres
 
 `data/store.js` teď mluví se skutečným Postgresem přes `db/pool.js`.
