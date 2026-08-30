@@ -1,0 +1,93 @@
+const express = require('express');
+const crypto = require('crypto');
+const router = express.Router();
+const store = require('../data/store');
+
+const CHAT_INTERVAL_SECONDS = parseInt(process.env.CHAT_INTERVAL_SECONDS || '300', 10);
+const POINTS_CHAT = parseInt(process.env.POINTS_PER_CHAT_MESSAGE || '1', 10);
+const POINTS_CHAT_SUB = parseInt(process.env.POINTS_PER_CHAT_MESSAGE_SUB || '2', 10);
+const POINTS_NEW_SUB = parseInt(process.env.POINTS_PER_NEW_SUB || '55', 10);
+const POINTS_GIFTED_SUB = parseInt(process.env.POINTS_PER_GIFTED_SUB || '55', 10);
+
+// Jednoduchá ochrana proti dvojitému připsání bodů za stejný chat interval.
+// Pro víc instancí serveru / restart procesu nahraď za DB tabulku (viz README).
+const seenIntervals = new Set();
+
+function verifySignature(req) {
+  const signature = req.headers['kick-event-signature'];
+  const secret = process.env.KICK_WEBHOOK_SECRET;
+  if (!secret || !signature) return false;
+  const expected = crypto.createHmac('sha256', secret).update(req.rawBody || '').digest('hex');
+  try {
+    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+  } catch {
+    return false;
+  }
+}
+
+router.post('/kick', express.json({
+  verify: (req, res, buf) => { req.rawBody = buf; },
+}), (req, res) => {
+  if (!verifySignature(req)) {
+    return res.status(401).json({ error: 'Neplatný podpis webhooku' });
+  }
+
+  const { type, data } = req.body;
+
+  try {
+    switch (type) {
+      case 'chat.message.sent': {
+        const uid = String(data.sender.user_id);
+        store.upsertUser({
+          kick_user_id: uid,
+          username: data.sender.username,
+          avatar_url: data.sender.profile_picture || null,
+          is_subscriber: Boolean(data.sender.is_subscriber),
+        });
+
+        const bucket = Math.floor(Date.now() / 1000 / CHAT_INTERVAL_SECONDS);
+        const key = `${uid}:${bucket}`;
+        if (seenIntervals.has(key)) return res.json({ ok: true, awarded: 0 });
+        seenIntervals.add(key);
+
+        const amount = data.sender.is_subscriber ? POINTS_CHAT_SUB : POINTS_CHAT;
+        store.addPoints(uid, amount);
+        return res.json({ ok: true, awarded: amount });
+      }
+
+      case 'channel.subscription.new':
+      case 'channel.subscription.renewal': {
+        const uid = String(data.subscriber.user_id);
+        store.upsertUser({
+          kick_user_id: uid,
+          username: data.subscriber.username,
+          avatar_url: data.subscriber.profile_picture || null,
+          is_subscriber: true,
+        });
+        store.addPoints(uid, POINTS_NEW_SUB);
+        return res.json({ ok: true, awarded: POINTS_NEW_SUB });
+      }
+
+      case 'channel.subscription.gifts': {
+        const uid = String(data.gifter.user_id);
+        store.upsertUser({
+          kick_user_id: uid,
+          username: data.gifter.username,
+          avatar_url: data.gifter.profile_picture || null,
+        });
+        const quantity = data.quantity || (data.gifted_users ? data.gifted_users.length : 1);
+        const amount = POINTS_GIFTED_SUB * quantity;
+        store.addPoints(uid, amount);
+        return res.json({ ok: true, awarded: amount });
+      }
+
+      default:
+        return res.json({ ok: true, ignored: type });
+    }
+  } catch (err) {
+    console.error('Webhook processing error:', err);
+    return res.status(500).json({ error: 'Interní chyba při zpracování eventu' });
+  }
+});
+
+module.exports = router;

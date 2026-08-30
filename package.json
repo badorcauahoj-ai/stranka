@@ -1,0 +1,17 @@
+{
+  "name": "tyblaho69-kk",
+  "version": "1.0.0",
+  "description": "KK bodovy system pro tyblaho69 - leaderboard, shop, inventar, admin",
+  "main": "server.js",
+  "type": "commonjs",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node server.js"
+  },
+  "dependencies": {
+    "cookie-session": "^2.1.0",
+    "dotenv": "^16.4.5",
+    "express": "^4.19.2",
+    "node-fetch": "^2.7.0"
+  }
+}
