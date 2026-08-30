@@ -111,3 +111,4 @@ const api = {
     }
   },
 };
+window.API = api;
