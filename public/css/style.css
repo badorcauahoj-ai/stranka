@@ -244,7 +244,7 @@
   footer a:hover{color:var(--text-0);}
 
   .sponsor-strip{
-    border-top:1px solid var(--line);margin-top:90px;padding:64px 20px 16px;
+    border-top:1px solid var(--line);margin-top:90px;padding:64px 20px 64px;
     display:flex;flex-direction:column;align-items:center;gap:26px;
   }
   .sponsor-label{font-size:.7rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text-2);}
