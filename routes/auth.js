@@ -66,7 +66,7 @@ router.get('/kick/callback', async (req, res) => {
     const userData = await userRes.json();
     const kickUser = userData?.data?.[0] || userData?.data || {};
 
-    const user = store.upsertUser({
+    const user = await store.upsertUser({
       kick_user_id: String(kickUser.user_id || kickUser.id),
       username: kickUser.name || kickUser.username || 'Neznámý',
       avatar_url: kickUser.profile_picture || null,

@@ -2,6 +2,7 @@ require('dotenv').config();
 const express = require('express');
 const cookieSession = require('cookie-session');
 const path = require('path');
+const { initSchema } = require('./db/pool');
 
 const app = express();
 
@@ -19,5 +20,19 @@ app.use('/api', require('./routes/api'));
 
 app.use(express.static(path.join(__dirname, 'public')));
 
+// Jednotné zpracování chyb z async routes (viz `next(err)` v routes/*.js)
+app.use((err, req, res, next) => {
+  console.error(err);
+  res.status(500).json({ error: 'Interní chyba serveru' });
+});
+
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(`tyblaho69 KK server běží na http://localhost:${PORT}`));
+
+initSchema()
+  .then(() => {
+    app.listen(PORT, () => console.log(`tyblaho69 KK server běží na http://localhost:${PORT}`));
+  })
+  .catch(err => {
+    console.error('Nepodařilo se inicializovat databázi:', err);
+    process.exit(1);
+  });

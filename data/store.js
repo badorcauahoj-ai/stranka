@@ -1,107 +1,165 @@
-// Dočasné úložiště v paměti procesu.
-// Až budeš mít databázi (Postgres na Railway apod.), nahraď funkce v tomto
-// souboru dotazy do DB - zbytek serveru (routes/*.js) se nemusí měnit,
-// protože pracuje jen s touhle vrstvou.
+const { pool } = require('../db/pool');
 
-let users = [];        // { kick_user_id, username, avatar_url, is_subscriber, kk_points, sub_streak }
-let shopItems = [];     // { id, name, type, price, img, stock }
-let purchases = [];     // { id, kick_user_id, item_id, quantity, created_at }
-let nextItemId = 1;
-let nextPurchaseId = 1;
-
-function findUser(kick_user_id) {
-  return users.find(u => u.kick_user_id === kick_user_id) || null;
+async function findUser(kick_user_id) {
+  const { rows } = await pool.query('SELECT * FROM users WHERE kick_user_id = $1', [kick_user_id]);
+  return rows[0] || null;
 }
 
-function upsertUser({ kick_user_id, username, avatar_url, is_subscriber }) {
-  let user = findUser(kick_user_id);
-  if (!user) {
-    user = { kick_user_id, username, avatar_url, is_subscriber: !!is_subscriber, kk_points: 0, sub_streak: 0 };
-    users.push(user);
-  } else {
-    user.username = username || user.username;
-    if (avatar_url) user.avatar_url = avatar_url;
-    if (is_subscriber !== undefined) user.is_subscriber = is_subscriber;
+async function upsertUser({ kick_user_id, username, avatar_url, is_subscriber }) {
+  const { rows } = await pool.query(
+    `INSERT INTO users (kick_user_id, username, avatar_url, is_subscriber)
+     VALUES ($1, $2, $3, COALESCE($4, FALSE))
+     ON CONFLICT (kick_user_id) DO UPDATE SET
+       username = EXCLUDED.username,
+       avatar_url = COALESCE(EXCLUDED.avatar_url, users.avatar_url),
+       is_subscriber = COALESCE($4, users.is_subscriber),
+       updated_at = now()
+     RETURNING *`,
+    [kick_user_id, username, avatar_url || null, is_subscriber === undefined ? null : is_subscriber]
+  );
+  return rows[0];
+}
+
+async function addPoints(kick_user_id, amount, reason = 'manual_adjust', meta = null) {
+  await pool.query(
+    'UPDATE users SET kk_points = GREATEST(0, kk_points + $1), updated_at = now() WHERE kick_user_id = $2',
+    [amount, kick_user_id]
+  );
+  await pool.query(
+    'INSERT INTO point_transactions (kick_user_id, amount, reason, meta) VALUES ($1, $2, $3, $4)',
+    [kick_user_id, amount, reason, meta ? JSON.stringify(meta) : null]
+  );
+}
+
+async function getLeaderboard(search = '') {
+  const { rows } = await pool.query(
+    search
+      ? `SELECT kick_user_id, username, avatar_url, is_subscriber, kk_points, sub_streak
+         FROM users WHERE username ILIKE $1 ORDER BY kk_points DESC LIMIT 200`
+      : `SELECT kick_user_id, username, avatar_url, is_subscriber, kk_points, sub_streak
+         FROM users ORDER BY kk_points DESC LIMIT 200`,
+    search ? [`%${search}%`] : []
+  );
+  return rows.map((u, idx) => ({ ...u, rank: idx + 1 }));
+}
+
+async function getRank(kick_user_id) {
+  const { rows } = await pool.query(
+    `SELECT rank FROM (
+       SELECT kick_user_id, RANK() OVER (ORDER BY kk_points DESC) AS rank FROM users
+     ) t WHERE kick_user_id = $1`,
+    [kick_user_id]
+  );
+  return rows[0] ? Number(rows[0].rank) : null;
+}
+
+async function getShopItems() {
+  const { rows } = await pool.query('SELECT * FROM shop_items WHERE active = TRUE ORDER BY price ASC');
+  return rows;
+}
+
+async function createShopItem({ name, type, price, img, stock }) {
+  const { rows } = await pool.query(
+    `INSERT INTO shop_items (name, type, price, img, stock) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+    [name, type || 'Losování', price, img || null, stock === undefined ? null : stock]
+  );
+  return rows[0];
+}
+
+async function updateShopItem(id, { name, type, price, img, stock }) {
+  const { rows } = await pool.query(
+    `UPDATE shop_items SET
+       name = COALESCE($2, name),
+       type = COALESCE($3, type),
+       price = COALESCE($4, price),
+       img = COALESCE($5, img),
+       stock = COALESCE($6, stock)
+     WHERE id = $1 RETURNING *`,
+    [id, name, type, price, img, stock]
+  );
+  return rows[0] || null;
+}
+
+async function deleteShopItem(id) {
+  await pool.query('DELETE FROM shop_items WHERE id = $1', [id]);
+}
+
+async function buyItem(kick_user_id, item_id, quantity) {
+  const client = await pool.connect();
+  try {
+    await client.query('BEGIN');
+
+    const { rows: userRows } = await client.query(
+      'SELECT * FROM users WHERE kick_user_id = $1 FOR UPDATE', [kick_user_id]
+    );
+    const { rows: itemRows } = await client.query(
+      'SELECT * FROM shop_items WHERE id = $1 FOR UPDATE', [item_id]
+    );
+    const user = userRows[0];
+    const item = itemRows[0];
+
+    if (!user || !item) {
+      await client.query('ROLLBACK');
+      return { error: 'Uživatel nebo položka nenalezena' };
+    }
+
+    const total = item.price * quantity;
+    if (user.kk_points < total) {
+      await client.query('ROLLBACK');
+      return { error: 'Nedostatek KK bodů' };
+    }
+    if (item.stock !== null && item.stock < quantity) {
+      await client.query('ROLLBACK');
+      return { error: 'Nedostatek skladem' };
+    }
+
+    await client.query('UPDATE users SET kk_points = kk_points - $1 WHERE kick_user_id = $2', [total, kick_user_id]);
+    if (item.stock !== null) {
+      await client.query('UPDATE shop_items SET stock = stock - $1 WHERE id = $2', [quantity, item_id]);
+    }
+    const { rows: purchaseRows } = await client.query(
+      `INSERT INTO purchases (kick_user_id, item_id, quantity, name, img, type)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [kick_user_id, item_id, quantity, item.name, item.img, item.type]
+    );
+    await client.query(
+      'INSERT INTO point_transactions (kick_user_id, amount, reason, meta) VALUES ($1, $2, $3, $4)',
+      [kick_user_id, -total, 'shop_purchase', JSON.stringify({ item_id, quantity })]
+    );
+
+    await client.query('COMMIT');
+    return { purchase: purchaseRows[0] };
+  } catch (err) {
+    await client.query('ROLLBACK');
+    throw err;
+  } finally {
+    client.release();
   }
-  return user;
 }
 
-function addPoints(kick_user_id, amount) {
-  const user = findUser(kick_user_id);
-  if (!user) return;
-  user.kk_points = Math.max(0, user.kk_points + amount);
+async function getInventory(kick_user_id) {
+  const { rows } = await pool.query(
+    'SELECT * FROM purchases WHERE kick_user_id = $1 ORDER BY created_at DESC', [kick_user_id]
+  );
+  return rows;
 }
 
-function getLeaderboard(search = '') {
-  const sorted = [...users].sort((a, b) => b.kk_points - a.kk_points);
-  const filtered = search
-    ? sorted.filter(u => u.username.toLowerCase().includes(search.toLowerCase()))
-    : sorted;
-  return filtered.map((u, idx) => ({ ...u, rank: sorted.indexOf(u) + 1 }));
-}
-
-function getRank(kick_user_id) {
-  const sorted = [...users].sort((a, b) => b.kk_points - a.kk_points);
-  const idx = sorted.findIndex(u => u.kick_user_id === kick_user_id);
-  return idx === -1 ? null : idx + 1;
-}
-
-function getShopItems() {
-  return shopItems.filter(i => i.active !== false);
-}
-
-function createShopItem(item) {
-  const newItem = { id: nextItemId++, active: true, ...item };
-  shopItems.push(newItem);
-  return newItem;
-}
-
-function updateShopItem(id, patch) {
-  const item = shopItems.find(i => i.id === id);
-  if (!item) return null;
-  Object.assign(item, patch);
-  return item;
-}
-
-function deleteShopItem(id) {
-  shopItems = shopItems.filter(i => i.id !== id);
-}
-
-function buyItem(kick_user_id, item_id, quantity) {
-  const user = findUser(kick_user_id);
-  const item = shopItems.find(i => i.id === item_id);
-  if (!user || !item) return { error: 'Uživatel nebo položka nenalezena' };
-
-  const total = item.price * quantity;
-  if (user.kk_points < total) return { error: 'Nedostatek KK bodů' };
-  if (item.stock !== null && item.stock !== undefined && item.stock < quantity) {
-    return { error: 'Nedostatek skladem' };
+async function hasChatIntervalPassed(kick_user_id, bucket) {
+  try {
+    await pool.query(
+      'INSERT INTO chat_intervals (kick_user_id, interval_bucket) VALUES ($1, $2)',
+      [kick_user_id, bucket]
+    );
+    return true; // nový interval, body se mají připsat
+  } catch (err) {
+    if (err.code === '23505') return false; // UNIQUE violation = už bylo připsáno
+    throw err;
   }
-
-  user.kk_points -= total;
-  if (item.stock !== null && item.stock !== undefined) item.stock -= quantity;
-
-  const purchase = {
-    id: nextPurchaseId++,
-    kick_user_id,
-    item_id,
-    quantity,
-    name: item.name,
-    img: item.img,
-    type: item.type,
-    created_at: new Date().toISOString(),
-  };
-  purchases.push(purchase);
-  return { purchase };
-}
-
-function getInventory(kick_user_id) {
-  return purchases.filter(p => p.kick_user_id === kick_user_id);
 }
 
 module.exports = {
-  upsertUser,
   findUser,
+  upsertUser,
   addPoints,
   getLeaderboard,
   getRank,
@@ -111,4 +169,5 @@ module.exports = {
   deleteShopItem,
   buyItem,
   getInventory,
+  hasChatIntervalPassed,
 };

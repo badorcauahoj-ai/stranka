@@ -44,26 +44,49 @@ tyblaho69/
   data/store.js          — datová vrstva (zatím v paměti procesu)
 ```
 
-## Zatím v paměti, ne v databázi
+## Databáze — už napojená na Postgres
 
-`data/store.js` drží data v proměnných procesu — funguje to na test,
-ale **při restartu serveru se všechno smaže** a na Vercelu (serverless)
-by se to mazalo mezi jednotlivými requesty. Tohle je přesně to místo,
-kam se zapojí databáze, až budeš mít hosting hotový — stačí přepsat
-funkce v tomto jednom souboru, zbytek appky (routes, frontend) se
-nemusí měnit.
+`data/store.js` teď mluví se skutečným Postgresem přes `db/pool.js`.
+Schéma (`db/schema.sql`) se **vytvoří automaticky při startu serveru** —
+nemusíš nic ručně spouštět v Railway konzoli.
+
+### Nastavení na Railway
+
+1. V projektu na Railway přidej **PostgreSQL** (`+ New` → `Database` →
+   `Add PostgreSQL`), pokud jsi to ještě neudělal.
+2. U tvého Node serveru (ne u databáze) zkontroluj v **Variables**, že
+   tam je `DATABASE_URL` (Railway to obvykle propojí automaticky v
+   rámci projektu).
+3. Přidej tam i zbytek proměnných z `.env.example`:
+   - `ADMIN_USERNAME`, `ADMIN_PASSWORD` — přihlášení do administrace
+   - `SESSION_SECRET` — libovolný náhodný dlouhý řetězec
+   - `KICK_CLIENT_ID`, `KICK_CLIENT_SECRET`, `KICK_REDIRECT_URI` — až
+     budeš mít založenou Kick OAuth appku (redirect URI musí být tvoje
+     Railway doména, ne localhost)
+   - `KICK_WEBHOOK_SECRET` — až budeš registrovat webhooky
+4. Redeploy. V logu by se mělo objevit `✅ Databázové schéma je
+   připravené.`
+
+### Lokální vývoj s Postgresem
+
+Pokud chceš appku zkoušet i lokálně, budeš potřebovat běžící Postgres
+(např. přes Docker: `docker run -e POSTGRES_PASSWORD=dev -p 5432:5432
+postgres`) a v `.env` nastavit `DATABASE_URL` na něj. Bez `DATABASE_URL`
+appka naběhne (statické stránky fungují), ale API volání do databáze
+spadnou — hodí se to jen na rychlou kontrolu frontendu.
 
 ## Vercel vs Railway — na co myslet
 
-- **Railway** — tenhle Express server (`server.js`) tam poběží tak,
-  jak je, protože Railway drží dlouhotrvající proces. Přidáš tam
-  Postgres add-on a napojíš ho v `data/store.js`.
-- **Vercel** — je postavený na serverless funkcích, takže dlouhotrvající
-  Express proces (a hlavně data v paměti) tam nefunguje spolehlivě.
-  Buď by šlo `server.js` obalit jako serverless funkci (funguje, ale je
-  to trochu obcházení), nebo by bylo čistší appku převést na Next.js
-  API routes. Řekni, kam se nakonec rozhodneš dát hosting, ať to
-  případně doladíme přesně pod něj.
+Appka je teď napsaná jako běžný Express server s vlastním Postgres
+připojením (`pg` pool) — to je přesně to, jak Railway očekává, že appky
+fungují (dlouhotrvající proces). Klidně tam zůstaň.
+
+Pokud by ses přece jen chtěl přesunout na Vercel: Vercel běží na
+serverless funkcích, takže dlouhotrvající `pg.Pool` připojení (tak jak
+je teď napsané v `db/pool.js`) by potřebovalo upravit na "serverless
+friendly" klienta (např. Neon nebo Vercel Postgres s HTTP driverem) a
+appku by bylo čistší přepsat na Next.js API routes. Není to nutné, jen
+ať víš, že přechod není jen "zkopírovat soubory".
 
 ## Spuštění lokálně
 
