@@ -6,11 +6,15 @@ const { initSchema } = require('./db/pool');
 
 const app = express();
 
+// Nutné pro Railway / Heroku (HTTPS proxy) - bez toho nefungují cookies v produkci
+app.set('trust proxy', 1);
+
 app.use(express.json());
 app.use(cookieSession({
   name: 'session',
   secret: process.env.SESSION_SECRET || 'dev-secret-zmen-v-produkci',
   maxAge: 30 * 24 * 60 * 60 * 1000,
+  secureProxy: true, // Zajišťuje funkčnost cookies na HTTPS
 }));
 
 app.use('/api/auth', require('./routes/auth'));
