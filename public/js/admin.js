@@ -133,6 +133,7 @@ async function deleteAdminItem(id) {
     }
   }
 }
+
 function initAdminLogin() {
   const loginBtn = document.getElementById('admin-login-btn');
   if (loginBtn) {
@@ -141,4 +142,9 @@ function initAdminLogin() {
       handleAdminLogin();
     });
   }
+}
+
+function initImageUpload() {
+  // Prázdná funkce zajišťuje, že main.js nevrátí chybovou hlášku ReferenceError.
+  // Nahrávání obrázků se nyní kompletně řeší v rámci funkce initAdminForm.
 }
