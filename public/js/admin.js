@@ -2,7 +2,7 @@
 
 let editingItemId = null;
 
-function initAdmin() {
+function initAdminForm() {
   const form = document.getElementById('admin-item-form');
   const fileInput = document.getElementById('admin-img-file');
   const fileBtn = document.getElementById('admin-file-btn');
