@@ -49,6 +49,30 @@ function initAshParticles() {
   }
 }
 
+// Zjistí, jestli je uživatel přihlášený přes Kick, a podle toho
+// přepne hlavičku mezi tlačítkem "Přihlásit" a jménem/odhlášením.
+async function initKickAuthStatus() {
+  const me = await API.getMe();
+  const loginBtn = document.getElementById('kickLoginBtn');
+  const userBox = document.getElementById('kickUserBox');
+  const usernameEl = document.getElementById('kickUsername');
+
+  if (me) {
+    loginBtn.style.display = 'none';
+    userBox.style.display = 'flex';
+    usernameEl.textContent = me.username;
+  } else {
+    loginBtn.style.display = 'inline-block';
+    userBox.style.display = 'none';
+  }
+}
+
+function initKickLogout() {
+  document.getElementById('kickLogoutBtn').addEventListener('click', () => {
+    window.location.href = '/api/auth/logout';
+  });
+}
+
 // Admin login modal (otevření/zavření okna) - samotné ověření je v admin.js
 function initAdminModal() {
   const overlay = document.getElementById('adminModalOverlay');

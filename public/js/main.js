@@ -7,6 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initAdminForm();
   initImageUpload();
   initShopFilters();
+  initKickLogout();
 
   document.getElementById('searchInput').addEventListener('input', e => renderLeaderboard(e.target.value));
 
@@ -14,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     window.location.href = '/api/auth/kick/login';
   });
 
+  initKickAuthStatus();
   renderLeaderboard();
   renderYourStats();
   renderShop();
