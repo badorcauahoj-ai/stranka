@@ -133,3 +133,12 @@ async function deleteAdminItem(id) {
     }
   }
 }
+function initAdminLogin() {
+  const loginBtn = document.getElementById('admin-login-btn');
+  if (loginBtn) {
+    loginBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      handleAdminLogin();
+    });
+  }
+}
