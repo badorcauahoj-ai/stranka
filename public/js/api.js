@@ -1,30 +1,71 @@
 // api.js — Veškerá komunikace s backendem (API client)
 
 const api = {
-  // ---- Náhled / Inicializace ----
-  async getInitialData() {
+  // ---- Leaderboard ----
+  async getLeaderboard(search = '') {
     try {
-      const res = await fetch('/api/init');
-      if (!res.ok) return null;
-      return await res.json();
+      const url = search ? `/api/leaderboard?q=${encodeURIComponent(search)}` : '/api/leaderboard';
+      const res = await fetch(url);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.leaderboard || [];
     } catch (e) {
-      console.error('Chyba při načítání dat:', e);
+      console.error('Chyba při načítání žebříčku:', e);
+      return [];
+    }
+  },
+
+  // ---- Přihlášený uživatel (přes Kick) ----
+  async getMe() {
+    try {
+      const res = await fetch('/api/me');
+      if (!res.ok) return null;
+      const data = await res.json();
+      return data.user || null;
+    } catch (e) {
+      console.error('Chyba při načítání profilu:', e);
       return null;
     }
   },
 
-  // ---- Nákup výhry ----
-  async buyItem(itemId) {
+  // ---- Shop ----
+  async getShopItems() {
     try {
-      const res = await fetch('/api/buy', {
+      const res = await fetch('/api/shop');
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.items || [];
+    } catch (e) {
+      console.error('Chyba při načítání shopu:', e);
+      return [];
+    }
+  },
+
+  // ---- Inventář ----
+  async getInventory() {
+    try {
+      const res = await fetch('/api/inventory');
+      if (!res.ok) return [];
+      const data = await res.json();
+      return data.inventory || [];
+    } catch (e) {
+      console.error('Chyba při načítání inventáře:', e);
+      return [];
+    }
+  },
+
+  // ---- Nákup výhry ----
+  async buyItem(itemId, quantity = 1) {
+    try {
+      const res = await fetch('/api/shop/buy', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ itemId }),
+        body: JSON.stringify({ item_id: itemId, quantity }),
       });
       return await res.json();
     } catch (e) {
       console.error('Chyba při nákupu:', e);
-      return { success: false, error: 'Chyba sítě' };
+      return { ok: false, error: 'Chyba sítě' };
     }
   },
 
@@ -39,7 +80,7 @@ const api = {
       return await res.json();
     } catch (e) {
       console.error('Chyba při přihlašování admina:', e);
-      return { success: false, error: 'Chyba sítě' };
+      return { ok: false, error: 'Chyba sítě' };
     }
   },
 
@@ -49,7 +90,7 @@ const api = {
       return await res.json();
     } catch (e) {
       console.error('Chyba při odhlašování:', e);
-      return { success: false };
+      return { ok: false };
     }
   },
 
@@ -64,7 +105,7 @@ const api = {
       return await res.json();
     } catch (e) {
       console.error('Chyba při přidávání výhry:', e);
-      return { success: false, error: 'Chyba sítě' };
+      return { ok: false, error: 'Chyba sítě' };
     }
   },
 
@@ -78,19 +119,17 @@ const api = {
       return await res.json();
     } catch (e) {
       console.error('Chyba při úpravě výhry:', e);
-      return { success: false, error: 'Chyba sítě' };
+      return { ok: false, error: 'Chyba sítě' };
     }
   },
 
   async adminDeleteItem(id) {
     try {
-      const res = await fetch(`/api/admin/items/${id}`, {
-        method: 'DELETE',
-      });
+      const res = await fetch(`/api/admin/items/${id}`, { method: 'DELETE' });
       return await res.json();
     } catch (e) {
       console.error('Chyba při mazání výhry:', e);
-      return { success: false, error: 'Chyba sítě' };
+      return { ok: false, error: 'Chyba sítě' };
     }
   },
 
