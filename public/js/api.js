@@ -1,87 +1,113 @@
-// Centralizovaná komunikace s backendem.
-// Až bude napojená databáze, mění se pouze tenhle soubor - zbytek frontendu
-// pracuje s daty, která tyto funkce vrátí, a nezajímá ho odkud jsou.
+// api.js — Veškerá komunikace s backendem (API client)
 
-const API = {
-  async getLeaderboard(search = '') {
-    const res = await fetch('/api/leaderboard?q=' + encodeURIComponent(search));
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.leaderboard || [];
+const api = {
+  // ---- Náhled / Inicializace ----
+  async getInitialData() {
+    try {
+      const res = await fetch('/api/init');
+      if (!res.ok) return null;
+      return await res.json();
+    } catch (e) {
+      console.error('Chyba při načítání dat:', e);
+      return null;
+    }
   },
 
-  async getMe() {
-    const res = await fetch('/api/me');
-    if (!res.ok) return null;
-    const data = await res.json();
-    return data.user || null;
+  // ---- Nákup výhry ----
+  async buyItem(itemId) {
+    try {
+      const res = await fetch('/api/buy', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ itemId }),
+      });
+      return await res.json();
+    } catch (e) {
+      console.error('Chyba při nákupu:', e);
+      return { success: false, error: 'Chyba sítě' };
+    }
   },
 
-  async getShopItems() {
-    const res = await fetch('/api/shop');
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.items || [];
-  },
-
-  async buyItem(itemId, quantity = 1) {
-    const res = await fetch('/api/shop/buy', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ item_id: itemId, quantity }),
-    });
-    const data = await res.json().catch(() => ({}));
-    return { ok: res.ok, ...data };
-  },
-
-  async getInventory() {
-    const res = await fetch('/api/inventory');
-    if (!res.ok) return [];
-    const data = await res.json();
-    return data.inventory || [];
-  },
-
+  // ---- Admin Login / Logout ----
   async adminLogin(username, password) {
-    const res = await fetch('/api/admin/login', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ username, password }),
-    });
-    return res.ok;
+    try {
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ username, password }),
+      });
+      return await res.json();
+    } catch (e) {
+      console.error('Chyba při přihlašování admina:', e);
+      return { success: false, error: 'Chyba sítě' };
+    }
   },
 
-  async adminUploadImage(file) {
-    const formData = new FormData();
-    formData.append('image', file);
-    const res = await fetch('/api/admin/upload', {
-      method: 'POST',
-      body: formData,
-    });
-    const data = await res.json().catch(() => ({}));
-    return { ok: res.ok, ...data };
+  async adminLogout() {
+    try {
+      const res = await fetch('/api/admin/logout', { method: 'POST' });
+      return await res.json();
+    } catch (e) {
+      console.error('Chyba při odhlašování:', e);
+      return { success: false };
+    }
   },
 
-  async adminCreateItem(item) {
-    const res = await fetch('/api/admin/items', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item),
-    });
-    const data = await res.json().catch(() => ({}));
-    return { ok: res.ok, ...data };
+  // ---- Admin CRUD nad výhrami ----
+  async adminAddItem(itemData) {
+    try {
+      const res = await fetch('/api/admin/items', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData),
+      });
+      return await res.json();
+    } catch (e) {
+      console.error('Chyba při přidávání výhry:', e);
+      return { success: false, error: 'Chyba sítě' };
+    }
   },
 
-  async adminUpdateItem(id, item) {
-    const res = await fetch('/api/admin/items/' + id, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(item),
-    });
-    return res.ok;
+  async adminUpdateItem(id, itemData) {
+    try {
+      const res = await fetch(`/api/admin/items/${id}`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(itemData),
+      });
+      return await res.json();
+    } catch (e) {
+      console.error('Chyba při úpravě výhry:', e);
+      return { success: false, error: 'Chyba sítě' };
+    }
   },
 
   async adminDeleteItem(id) {
-    const res = await fetch('/api/admin/items/' + id, { method: 'DELETE' });
-    return res.ok;
+    try {
+      const res = await fetch(`/api/admin/items/${id}`, {
+        method: 'DELETE',
+      });
+      return await res.json();
+    } catch (e) {
+      console.error('Chyba při mazání výhry:', e);
+      return { success: false, error: 'Chyba sítě' };
+    }
+  },
+
+  // ---- Admin Nahrání obrázku ----
+  async adminUploadImage(file) {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const res = await fetch('/api/admin/upload', {
+        method: 'POST',
+        body: formData,
+      });
+      return await res.json();
+    } catch (e) {
+      console.error('Chyba při nahrávání souboru:', e);
+      return { error: 'Chyba sítě při nahrávání souboru' };
+    }
   },
 };
