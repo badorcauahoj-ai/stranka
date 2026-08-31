@@ -105,11 +105,23 @@
   .modal p.hint{color:var(--text-2);font-size:.82rem;margin-bottom:20px;}
   .field{margin-bottom:14px;}
   .field label{display:block;font-size:.76rem;color:var(--text-1);margin-bottom:6px;}
-  .field input,.field select{
+  .field input,.field select,.field textarea{
     width:100%;background:var(--bg-1);border:1px solid var(--line-strong);border-radius:10px;
     padding:10px 12px;color:var(--text-0);font-family:'DM Sans';font-size:.9rem;outline:none;
   }
-  .field input:focus,.field select:focus{border-color:var(--kk);}
+  .field input:focus,.field select:focus,.field textarea:focus{border-color:var(--kk);}
+  .field textarea{resize:vertical;min-height:64px;line-height:1.5;}
+  .field textarea::placeholder{color:var(--text-2);}
+
+  .field input[type=file]{
+    padding:9px 12px;cursor:pointer;font-size:.82rem;color:var(--text-1);
+  }
+  .field input[type=file]::file-selector-button{
+    background:var(--kk);border:none;color:#0a0a0a;font-weight:600;
+    padding:7px 14px;border-radius:100px;margin-right:12px;cursor:pointer;
+    font-family:'DM Sans';font-size:.8rem;transition:opacity .15s;
+  }
+  .field input[type=file]::file-selector-button:hover{opacity:.85;}
   .modal-actions{display:flex;gap:10px;margin-top:20px;}
   .modal-actions .btn-kick{flex:1;text-align:center;}
   .btn-ghost{
@@ -430,8 +442,3 @@
   gap: 14px;
 }
 .item-modal-price { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--text-0); }
-
-
-
-
-
