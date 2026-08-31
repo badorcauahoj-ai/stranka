@@ -76,6 +76,7 @@ async function buyItem(id) {
   showToast('Nákup proběhl úspěšně!');
   renderShop();
   renderYourStats();
+  renderInventory();
 }
 
 function initShopFilters() {
