@@ -9,13 +9,35 @@ const POINTS_CHAT_SUB = parseInt(process.env.POINTS_PER_CHAT_MESSAGE_SUB || '20'
 const POINTS_NEW_SUB = parseInt(process.env.POINTS_PER_NEW_SUB || '100', 10);
 const POINTS_GIFTED_SUB = parseInt(process.env.POINTS_PER_GIFTED_SUB || '100', 10);
 
+const KICK_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
+MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq/+l1WnlRrGSolDMA+A8
+6rAhMbQGmQ2SapVcGM3zq8ANXjnhDWocMqfWcTd95btDydITa10kDvHzw9WQOqp2
+MZI7ZyrfzJuz5nhTPCiJwTwnEtWft7nV14BYRDHvlfqPUaZ+1KR4OCaO/wWIk/rQ
+L/TjY0M70gse8rlBkbo2a8rKhu69RQTRsoaf4DVhDPEeSeI5jVrRDGAMGL3cGuyY
+6CLKGdjVEM78g3JfYOvDU/RvfqD7L89TZ3iN94jrmWdGz34JNlEI5hqK8dd7C5EF
+BEbZ5jgB8s8ReQV8H+MkuffjdAj3ajDDX3DOJMIut1lBrUVD1AaSrGCKHooWoL2e
+twIDAQAB
+-----END PUBLIC KEY-----`;
+
 function verifySignature(req) {
+  const messageId = req.headers['kick-event-message-id'];
+  const timestamp = req.headers['kick-event-message-timestamp'];
   const signature = req.headers['kick-event-signature'];
-  const secret = process.env.KICK_WEBHOOK_SECRET;
-  if (!secret || !signature) return false;
-  const expected = crypto.createHmac('sha256', secret).update(req.rawBody || '').digest('hex');
+
+  if (!messageId || !timestamp || !signature || !req.rawBody) return false;
+
+  const signedPayload = Buffer.concat([
+    Buffer.from(`${messageId}.${timestamp}.`, 'utf8'),
+    req.rawBody,
+  ]);
+
   try {
-    return crypto.timingSafeEqual(Buffer.from(signature), Buffer.from(expected));
+    return crypto.verify(
+      'sha256',
+      signedPayload,
+      { key: KICK_PUBLIC_KEY, padding: crypto.constants.RSA_PKCS1_PADDING },
+      Buffer.from(signature, 'base64')
+    );
   } catch {
     return false;
   }
