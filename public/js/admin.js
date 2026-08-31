@@ -92,7 +92,7 @@ function initImageUpload() {
     uploading.style.display = 'none';
 
     if (!result.ok) {
-      alert(result.error || 'Nahrání obrázku se nezdařilo');
+      showToast(result.error || 'Nahrání obrázku se nezdařilo', 'error');
       e.target.value = '';
       return;
     }
@@ -115,7 +115,7 @@ function initAdminForm() {
     const stock = stockVal ? parseInt(stockVal) : null;
     const description = document.getElementById('fDescription').value.trim();
     if (!name || !price) {
-      alert('Vyplň aspoň název a cenu.');
+      showToast('Vyplň aspoň název a cenu.', 'error');
       return;
     }
 
@@ -130,13 +130,15 @@ function initAdminForm() {
     submitBtn.disabled = false;
 
     if (!result || result.ok === false) {
-      alert((result && result.error) || 'Uložení se nezdařilo. Zkus se znovu přihlásit do administrace.');
+      showToast((result && result.error) || 'Uložení se nezdařilo. Zkus se znovu přihlásit do administrace.', 'error');
       return;
     }
 
+    const wasEditing = Boolean(editingId);
     resetForm();
     renderAdminList();
     renderShop();
+    showToast(wasEditing ? 'Výhra upravena.' : 'Výhra přidána.');
   });
 }
 
@@ -168,7 +170,7 @@ function renderPointsSearchResults(users) {
       const reason = row.querySelector('.pts-reason').value.trim();
 
       if (!amount) {
-        alert('Zadej počet KK bodů (kladné číslo přičte, záporné odečte).');
+        showToast('Zadej počet KK bodů (kladné číslo přičte, záporné odečte).', 'error');
         return;
       }
 
@@ -177,7 +179,7 @@ function renderPointsSearchResults(users) {
       btn.disabled = false;
 
       if (!result.ok) {
-        alert(result.error || 'Úprava bodů se nezdařila.');
+        showToast(result.error || 'Úprava bodů se nezdařila.', 'error');
         return;
       }
 
@@ -185,6 +187,7 @@ function renderPointsSearchResults(users) {
       const users = await API.adminSearchUsers(input.value.trim());
       renderPointsSearchResults(users);
       renderLeaderboard(document.getElementById('searchInput').value);
+      showToast(`${amount > 0 ? '+' : ''}${amount} KK upraveno.`);
     });
   });
 }
