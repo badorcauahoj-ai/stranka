@@ -69,11 +69,11 @@ function initItemModal() {
 async function buyItem(id) {
   const result = await API.buyItem(id, 1);
   if (!result.ok) {
-    alert(result.error || 'Nákup se nezdařil. Zkontroluj, že jsi přihlášený a máš dost KK.');
+    showToast(result.error || 'Nákup se nezdařil. Zkontroluj, že jsi přihlášený a máš dost KK.', 'error');
     return;
   }
   closeItemModal();
-  alert('Nákup proběhl úspěšně!');
+  showToast('Nákup proběhl úspěšně!');
   renderShop();
   renderYourStats();
 }
