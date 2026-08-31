@@ -65,24 +65,25 @@ async function getShopItems() {
   return rows;
 }
 
-async function createShopItem({ name, type, price, img, stock }) {
+async function createShopItem({ name, type, price, img, stock, description }) {
   const { rows } = await pool.query(
-    `INSERT INTO shop_items (name, type, price, img, stock) VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-    [name, type || 'Losování', price, img || null, stock === undefined ? null : stock]
+    `INSERT INTO shop_items (name, type, price, img, stock, description) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+    [name, type || 'Losování', price, img || null, stock === undefined ? null : stock, description || null]
   );
   return rows[0];
 }
 
-async function updateShopItem(id, { name, type, price, img, stock }) {
+async function updateShopItem(id, { name, type, price, img, stock, description }) {
   const { rows } = await pool.query(
     `UPDATE shop_items SET
        name = COALESCE($2, name),
        type = COALESCE($3, type),
        price = COALESCE($4, price),
        img = COALESCE($5, img),
-       stock = COALESCE($6, stock)
+       stock = COALESCE($6, stock),
+       description = COALESCE($7, description)
      WHERE id = $1 RETURNING *`,
-    [id, name, type, price, img, stock]
+    [id, name, type, price, img, stock, description]
   );
   return rows[0] || null;
 }
