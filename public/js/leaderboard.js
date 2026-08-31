@@ -51,7 +51,7 @@ async function renderYourStats() {
     return;
   }
 
-  statsEl.textContent = `#${me.rank || '—'} · ${me.kk_points.toLocaleString('cs-CZ')} KK`;
+  statsEl.textContent = `${me.username} · #${me.rank || '—'} · ${me.kk_points.toLocaleString('cs-CZ')} KK`;
   messagesEl.textContent = (me.message_count || 0).toLocaleString('cs-CZ');
   pointsEl.textContent = me.kk_points.toLocaleString('cs-CZ');
 }
