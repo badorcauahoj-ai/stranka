@@ -6,7 +6,9 @@ const { initSchema } = require('./db/pool');
 
 const app = express();
 
-app.use(express.json());
+app.use(express.json({
+  verify: (req, res, buf) => { req.rawBody = buf; },
+}));
 app.use(cookieSession({
   name: 'session',
   secret: process.env.SESSION_SECRET || 'dev-secret-zmen-v-produkci',
