@@ -20,24 +20,24 @@ async function renderLeaderboard(filter = '') {
     const messageCount = u.message_count || 0;
 
     const avatarHtml = u.avatar_url
-      ? `<img src="${u.avatar_url}" class="r-avatar" alt="${u.username}" loading="lazy" onerror="this.outerHTML='<div class=&quot;r-avatar&quot;>${initials(u.username)}</div>'">`
-      : `<div class="r-avatar">${initials(u.username)}</div>`;
+      ? `<img src="${u.avatar_url}" class="tb69-avatar" alt="${u.username}" loading="lazy" onerror="this.outerHTML='<div class=&quot;tb69-avatar&quot;>${initials(u.username)}</div>'">`
+      : `<div class="tb69-avatar">${initials(u.username)}</div>`;
 
     const row = document.createElement('div');
-    row.className = 'rank-row' + (rank === 1 ? ' top' : '') + (rank === 2 || rank === 3 ? ' top2' : '');
+    row.className = 'tb69-row' + (rank === 1 ? ' top' : '') + (rank === 2 || rank === 3 ? ' top2' : '');
     row.style.animationDelay = (Math.min(rank, 12) * 0.03) + 's';
     row.innerHTML = `
-      <div class="rank-num">${rank}</div>
-      <div class="r-main">
+      <div class="tb69-num">${rank}</div>
+      <div class="tb69-main">
         ${avatarHtml}
         <div>
-          <div class="r-name">${u.username}</div>
-          <div class="r-meta">
+          <div class="tb69-name">${u.username}</div>
+          <div class="tb69-meta">
             <span class="msg-tag">${messageCount.toLocaleString('cs-CZ')} ${messageCount === 1 ? 'zpráva' : (messageCount >= 2 && messageCount <= 4 ? 'zprávy' : 'zpráv')}</span>
           </div>
         </div>
       </div>
-      <div class="r-kk">${u.kk_points.toLocaleString('cs-CZ')}<small> KK</small></div>
+      <div class="tb69-kk">${u.kk_points.toLocaleString('cs-CZ')}<small> KK</small></div>
     `;
     wrap.appendChild(row);
   });
