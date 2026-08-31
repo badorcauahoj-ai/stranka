@@ -83,18 +83,18 @@ router.post('/points/adjust', requireAdmin, async (req, res, next) => {
 
 router.post('/items', requireAdmin, async (req, res, next) => {
   try {
-    const { name, type, price, img, stock } = req.body;
+    const { name, type, price, img, stock, description } = req.body;
     if (!name || !price) return res.status(400).json({ error: 'Chybí název nebo cena' });
-    const item = await store.createShopItem({ name, type, price: parseInt(price, 10), img, stock });
+    const item = await store.createShopItem({ name, type, price: parseInt(price, 10), img, stock, description });
     res.json({ ok: true, item });
   } catch (err) { next(err); }
 });
 
 router.put('/items/:id', requireAdmin, async (req, res, next) => {
   try {
-    const { name, type, price, img, stock } = req.body;
+    const { name, type, price, img, stock, description } = req.body;
     const item = await store.updateShopItem(parseInt(req.params.id, 10), {
-      name, type, price: price ? parseInt(price, 10) : undefined, img, stock,
+      name, type, price: price ? parseInt(price, 10) : undefined, img, stock, description,
     });
     if (!item) return res.status(404).json({ error: 'Položka nenalezena' });
     res.json({ ok: true, item });
