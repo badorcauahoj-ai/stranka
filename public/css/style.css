@@ -159,8 +159,10 @@
   .r-avatar{
     width:42px;height:42px;border-radius:50%;flex-shrink:0;
     background:linear-gradient(135deg,#212321,#131413);border:1px solid var(--line-strong);
-    display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-size:.8rem;color:var(--text-1)
-      img.r-avatar{ object-fit:cover; };
+    display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-size:.8rem;color:var(--text-1);
+  }
+  img.r-avatar{
+    object-fit:cover;
   }
   .rank-row.top .r-avatar{width:52px;height:52px;font-size:.95rem;}
   .r-name{font-weight:600;font-size:1rem;}
