@@ -8,25 +8,28 @@ async function renderLeaderboard(filter = '') {
   wrap.innerHTML = '';
 
   const users = await API.getLeaderboard(filter);
-  console.log(users[0]);
   document.getElementById('playerCount').textContent = users.length + ' hráčů v žebříčku';
 
   if (users.length === 0) {
     wrap.innerHTML = `<div class="empty-state"><strong>Žebříček je zatím prázdný</strong>Databáze ještě není napojená — jakmile se diváci začnou přihlašovat přes Kick, objeví se tu.</div>`;
     return;
-    
   }
 
   users.forEach((u, idx) => {
     const rank = idx + 1;
     const messageCount = u.message_count || 0;
+
+    const avatarHtml = u.avatar_url
+      ? `<img src="${u.avatar_url}" class="r-avatar" alt="${u.username}" loading="lazy" onerror="this.outerHTML='<div class=&quot;r-avatar&quot;>${initials(u.username)}</div>'">`
+      : `<div class="r-avatar">${initials(u.username)}</div>`;
+
     const row = document.createElement('div');
     row.className = 'rank-row' + (rank === 1 ? ' top' : '') + (rank === 2 || rank === 3 ? ' top2' : '');
     row.style.animationDelay = (Math.min(rank, 12) * 0.03) + 's';
     row.innerHTML = `
       <div class="rank-num">${rank}</div>
       <div class="r-main">
-        <div class="r-avatar">${initials(u.username)}</div>
+        ${avatarHtml}
         <div>
           <div class="r-name">${u.username}</div>
           <div class="r-meta">
@@ -52,6 +55,10 @@ async function renderYourStats() {
     pointsEl.textContent = '0';
     return;
   }
+
+  const avatarHtml = me.avatar_url
+    ? `<img src="${me.avatar_url}" class="you-avatar" alt="${me.username}" onerror="this.style.display='none'">`
+    : '';
 
   statsEl.textContent = `${me.username} · #${me.rank || '—'} · ${me.kk_points.toLocaleString('cs-CZ')} KK`;
   messagesEl.textContent = (me.message_count || 0).toLocaleString('cs-CZ');
