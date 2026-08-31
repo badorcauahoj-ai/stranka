@@ -8,6 +8,17 @@ const KICK_AUTH_URL = 'https://id.kick.com/oauth/authorize';
 const KICK_TOKEN_URL = 'https://id.kick.com/oauth/token';
 const KICK_API_BASE = 'https://api.kick.com/public/v1';
 
+// Kick user_id kanálů, které smí spravovat webhook subscriptions
+// (majitelé - ty i tyblaho69). Oddělené čárkou v .env.
+const BROADCASTER_IDS = (process.env.KICK_BROADCASTER_IDS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
+function isBroadcaster(userId) {
+  return BROADCASTER_IDS.includes(String(userId));
+}
+
 // Krok 1: presmerovani na Kick, at uzivatel odsouhlasi pristup
 router.get('/kick/login', (req, res) => {
   if (!process.env.KICK_CLIENT_ID) {
@@ -60,7 +71,6 @@ router.get('/kick/callback', async (req, res) => {
       return res.status(500).send('Nepodařilo se získat token od Kicku.');
     }
 
-    // ULOŽ TOKEN DO SESSION - potřebujeme ho pro /kick/subscribe-webhooks
     req.session.access_token = tokenData.access_token;
 
     const userRes = await fetch(`${KICK_API_BASE}/users`, {
@@ -83,11 +93,14 @@ router.get('/kick/callback', async (req, res) => {
   }
 });
 
-// NOVÁ ROUTE - spustíš RUČNĚ JEDNOU, jako ty (broadcaster), po přihlášení.
-// Vytvoří webhook subscription u Kicku pro tvůj kanál.
+// Spustí majitel kanálu (badorisek nebo tyblaho69), jednou po přihlášení.
+// Vytvoří webhook subscription u Kicku pro jeho kanál.
 router.get('/kick/subscribe-webhooks', async (req, res) => {
   if (!req.session.user_id || !req.session.access_token) {
     return res.status(401).send('Musíš být přihlášený jako broadcaster (přes /api/auth/kick/login).');
+  }
+  if (!isBroadcaster(req.session.user_id)) {
+    return res.status(403).send('Tuhle akci může spustit jen majitel kanálu.');
   }
 
   try {
@@ -117,11 +130,13 @@ router.get('/kick/subscribe-webhooks', async (req, res) => {
   }
 });
 
-// NOVÁ ROUTE - smaže existující webhook subscriptions pro účet,
-// pod kterým jsi právě přihlášený. Použij pro úklid špatně vytvořených subscriptions.
+// Smaže webhook subscriptions pro účet, pod kterým je přihlášený majitel.
 router.get('/kick/unsubscribe-webhooks', async (req, res) => {
-  if (!req.session.access_token) {
+  if (!req.session.user_id || !req.session.access_token) {
     return res.status(401).send('Musíš být přihlášený (přes /api/auth/kick/login).');
+  }
+  if (!isBroadcaster(req.session.user_id)) {
+    return res.status(403).send('Tuhle akci může spustit jen majitel kanálu.');
   }
 
   const ids = [
