@@ -29,9 +29,15 @@ CREATE TABLE IF NOT EXISTS shop_items (
   price INTEGER NOT NULL,
   img TEXT,
   stock INTEGER,
+  description TEXT,
   active BOOLEAN DEFAULT TRUE,
   created_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Appka už jednou běžela bez sloupce description, tak ho pro
+-- existující databázi (Railway) doplníme dodatečně - je to bezpečné
+-- spustit i vícekrát, nic to nesmaže.
+ALTER TABLE shop_items ADD COLUMN IF NOT EXISTS description TEXT;
 
 CREATE TABLE IF NOT EXISTS purchases (
   id SERIAL PRIMARY KEY,
