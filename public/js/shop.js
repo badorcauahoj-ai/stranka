@@ -4,15 +4,12 @@ let shopItemsCache = [];
 async function renderShop() {
   const grid = document.getElementById('shopGrid');
   shopItemsCache = await API.getShopItems();
-
   const filtered = shopItemsCache.filter(i => shopFilter === 'all' || i.type === shopFilter);
   grid.innerHTML = '';
-
   if (filtered.length === 0) {
     grid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><strong>Zatím žádné výhry</strong>Databáze ještě není napojená — výhry se objeví, jakmile je admin přidá.</div>`;
     return;
   }
-
   filtered.forEach(i => {
     const card = document.createElement('div');
     card.className = 'item-card';
@@ -27,7 +24,6 @@ async function renderShop() {
     `;
     grid.appendChild(card);
   });
-
   grid.querySelectorAll('[data-buy]').forEach(btn => {
     btn.addEventListener('click', () => buyItem(+btn.dataset.buy));
   });
@@ -35,11 +31,26 @@ async function renderShop() {
 
 async function buyItem(id) {
   const result = await API.buyItem(id, 1);
+
   if (!result.ok) {
-    alert(result.error || 'Nákup se nezdařil. Zkontroluj, že jsi přihlášený a máš dost KK.');
+    if (result.status === 401) {
+      kkAlert('Pro nákup se musíš nejdřív přihlásit přes Kick.', {
+        title: 'Nejsi přihlášený',
+        type: 'error'
+      });
+    } else {
+      kkAlert(result.error || 'Zkontroluj, že máš dost KK bodů.', {
+        title: 'Nákup se nezdařil',
+        type: 'error'
+      });
+    }
     return;
   }
-  alert('Nákup proběhl úspěšně!');
+
+  kkAlert('Výhra je teď v tvém inventáři.', {
+    title: 'Nákup proběhl úspěšně',
+    type: 'success'
+  });
   renderShop();
   renderYourStats();
 }
