@@ -117,6 +117,41 @@ router.get('/kick/subscribe-webhooks', async (req, res) => {
   }
 });
 
+// NOVÁ ROUTE - smaže existující webhook subscriptions pro účet,
+// pod kterým jsi právě přihlášený. Použij pro úklid špatně vytvořených subscriptions.
+router.get('/kick/unsubscribe-webhooks', async (req, res) => {
+  if (!req.session.access_token) {
+    return res.status(401).send('Musíš být přihlášený (přes /api/auth/kick/login).');
+  }
+
+  const ids = [
+    '01M1C6HGXRAAMY4R1T4Y6X47X1',
+    '01M1C6HGY4QJZ7RV3D15VFAWGD',
+    '01M1C6HGYFA83WVPSBSEJBDJN8',
+    '01M1C6HGYVG078M1AFY1J3B7VY',
+  ];
+
+  try {
+    const params = new URLSearchParams();
+    ids.forEach(id => params.append('id', id));
+
+    const delRes = await fetch(`${KICK_API_BASE}/events/subscriptions?${params.toString()}`, {
+      method: 'DELETE',
+      headers: { Authorization: `Bearer ${req.session.access_token}` },
+    });
+
+    if (delRes.status === 204 || delRes.ok) {
+      return res.send('Subscriptions smazány (nebo už žádné nebyly).');
+    }
+    const data = await delRes.json().catch(() => ({}));
+    console.error('Kick unsubscribe error:', data);
+    res.status(delRes.status).json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Chyba při mazání subscription.');
+  }
+});
+
 router.get('/logout', (req, res) => {
   req.session.user_id = null;
   req.session.access_token = null;
