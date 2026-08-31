@@ -9,6 +9,12 @@ const POINTS_CHAT_SUB = parseInt(process.env.POINTS_PER_CHAT_MESSAGE_SUB || '20'
 const POINTS_NEW_SUB = parseInt(process.env.POINTS_PER_NEW_SUB || '100', 10);
 const POINTS_GIFTED_SUB = parseInt(process.env.POINTS_PER_GIFTED_SUB || '100', 10);
 
+// Kick user_id kanálů, jejichž eventy appka smí zpracovávat.
+const BROADCASTER_IDS = (process.env.KICK_BROADCASTER_IDS || '')
+  .split(',')
+  .map(s => s.trim())
+  .filter(Boolean);
+
 const KICK_PUBLIC_KEY = `-----BEGIN PUBLIC KEY-----
 MIIBIjANBgkqhkiG9w0BAQEFAAOCAQ8AMIIBCgKCAQEAq/+l1WnlRrGSolDMA+A8
 6rAhMbQGmQ2SapVcGM3zq8ANXjnhDWocMqfWcTd95btDydITa10kDvHzw9WQOqp2
@@ -59,9 +65,18 @@ router.post('/kick', async (req, res) => {
     return res.status(401).json({ error: 'Neplatný podpis webhooku' });
   }
 
+  const data = req.body;
+
+  // Event musí patřit jednomu z povolených kanálů (badorisek nebo tyblaho69),
+  // jinak ho ignorujeme - jinak by si kdokoliv mohl body namixovat na svém kanálu.
+  const broadcasterId = String(data?.broadcaster?.user_id || '');
+  if (BROADCASTER_IDS.length && !BROADCASTER_IDS.includes(broadcasterId)) {
+    console.warn('Webhook: event z nepovoleného kanálu, ignoruji', broadcasterId);
+    return res.json({ ok: true, ignored: 'cizí kanál' });
+  }
+
   const type = req.headers['kick-event-type'];
-const data = req.body;
-console.log('Webhook přijat:', type);
+  console.log('Webhook přijat:', type, 'kanál:', broadcasterId);
 
   try {
     switch (type) {
@@ -74,7 +89,6 @@ console.log('Webhook přijat:', type);
           is_subscriber: Boolean(data.sender.is_subscriber),
         });
 
-        // Pocet zprav se pocita za kazdou zpravu bez ohledu na interval body.
         await store.incrementMessageCount(uid);
 
         const bucket = Math.floor(Date.now() / 1000 / CHAT_INTERVAL_SECONDS);
