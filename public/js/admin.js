@@ -49,6 +49,7 @@ function startEdit(item) {
   document.getElementById('fPrice').value = item.price;
   document.getElementById('fImg').value = item.img || '';
   document.getElementById('fStock').value = item.stock || '';
+  document.getElementById('fDescription').value = item.description || '';
   document.getElementById('fSubmit').textContent = 'Uložit změny';
   document.getElementById('fCancelEdit').style.display = 'block';
 
@@ -66,7 +67,7 @@ function startEdit(item) {
 
 function resetForm() {
   editingId = null;
-  ['fName', 'fPrice', 'fImg', 'fStock'].forEach(id => document.getElementById(id).value = '');
+  ['fName', 'fPrice', 'fImg', 'fStock', 'fDescription'].forEach(id => document.getElementById(id).value = '');
   document.getElementById('fImgFile').value = '';
   document.getElementById('fImgPreviewWrap').style.display = 'none';
   document.getElementById('fType').value = 'Losování';
@@ -112,12 +113,13 @@ function initAdminForm() {
     const img = document.getElementById('fImg').value.trim();
     const stockVal = document.getElementById('fStock').value;
     const stock = stockVal ? parseInt(stockVal) : null;
+    const description = document.getElementById('fDescription').value.trim();
     if (!name || !price) {
       alert('Vyplň aspoň název a cenu.');
       return;
     }
 
-    const item = { name, type, price, img, stock };
+    const item = { name, type, price, img, stock, description };
     const submitBtn = document.getElementById('fSubmit');
     submitBtn.disabled = true;
 
@@ -225,9 +227,6 @@ function initAdminLogin() {
   });
 }
 
-// Po načtení stránky zjistí, jestli je admin session (cookie) pořád
-// platná, a pokud ano, rovnou zobrazí záložku Administrace - není
-// potřeba se po refreshi znovu přihlašovat.
 async function initAdminAuthStatus() {
   const isAdmin = await API.adminStatus();
   const adminTab = document.getElementById('adminTab');
