@@ -1,4 +1,37 @@
 // Taby (Leaderboard / Shop / Inventář / FAQ / Admin)
+function kkAlert(message, options = {}) {
+  const { title = 'Upozornění', type = 'info' } = options;
+
+  let overlay = document.querySelector('.kk-modal-overlay');
+  if (!overlay) {
+    overlay = document.createElement('div');
+    overlay.className = 'kk-modal-overlay';
+    overlay.innerHTML = `
+      <div class="kk-modal-box">
+        <span class="kk-modal-icon"></span>
+        <div class="kk-modal-title"></div>
+        <div class="kk-modal-message"></div>
+        <button class="kk-modal-btn">OK</button>
+      </div>`;
+    document.body.appendChild(overlay);
+
+    overlay.querySelector('.kk-modal-btn').addEventListener('click', () => {
+      overlay.classList.remove('show');
+    });
+    overlay.addEventListener('click', (e) => {
+      if (e.target === overlay) overlay.classList.remove('show');
+    });
+  }
+
+  const icons = { error: '⚠', success: '✓', info: 'ℹ' };
+  overlay.querySelector('.kk-modal-icon').textContent = icons[type] || icons.info;
+  overlay.querySelector('.kk-modal-icon').className = `kk-modal-icon ${type}`;
+  overlay.querySelector('.kk-modal-title').textContent = title;
+  overlay.querySelector('.kk-modal-message').textContent = message;
+
+  overlay.classList.add('show');
+}
+
 function initTabs() {
   document.querySelectorAll('.tab').forEach(tab => {
     tab.addEventListener('click', () => {
