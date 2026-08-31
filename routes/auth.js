@@ -60,6 +60,9 @@ router.get('/kick/callback', async (req, res) => {
       return res.status(500).send('Nepodařilo se získat token od Kicku.');
     }
 
+    // ULOŽ TOKEN DO SESSION - potřebujeme ho pro /kick/subscribe-webhooks
+    req.session.access_token = tokenData.access_token;
+
     const userRes = await fetch(`${KICK_API_BASE}/users`, {
       headers: { Authorization: `Bearer ${tokenData.access_token}` },
     });
@@ -80,8 +83,43 @@ router.get('/kick/callback', async (req, res) => {
   }
 });
 
+// NOVÁ ROUTE - spustíš RUČNĚ JEDNOU, jako ty (broadcaster), po přihlášení.
+// Vytvoří webhook subscription u Kicku pro tvůj kanál.
+router.get('/kick/subscribe-webhooks', async (req, res) => {
+  if (!req.session.user_id || !req.session.access_token) {
+    return res.status(401).send('Musíš být přihlášený jako broadcaster (přes /api/auth/kick/login).');
+  }
+
+  try {
+    const subRes = await fetch(`${KICK_API_BASE}/events/subscriptions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${req.session.access_token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        broadcaster_user_id: Number(req.session.user_id),
+        events: [
+          { name: 'chat.message.sent', version: 1 },
+          { name: 'channel.subscription.new', version: 1 },
+          { name: 'channel.subscription.renewal', version: 1 },
+          { name: 'channel.subscription.gifts', version: 1 },
+        ],
+        method: 'webhook',
+      }),
+    });
+    const data = await subRes.json();
+    console.log('Kick subscription result:', JSON.stringify(data));
+    res.json(data);
+  } catch (err) {
+    console.error(err);
+    res.status(500).send('Chyba při vytváření subscription.');
+  }
+});
+
 router.get('/logout', (req, res) => {
   req.session.user_id = null;
+  req.session.access_token = null;
   res.redirect('/');
 });
 
