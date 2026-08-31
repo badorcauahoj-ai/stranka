@@ -8,11 +8,13 @@ async function renderLeaderboard(filter = '') {
   wrap.innerHTML = '';
 
   const users = await API.getLeaderboard(filter);
+  console.log(users[0]);
   document.getElementById('playerCount').textContent = users.length + ' hráčů v žebříčku';
 
   if (users.length === 0) {
     wrap.innerHTML = `<div class="empty-state"><strong>Žebříček je zatím prázdný</strong>Databáze ještě není napojená — jakmile se diváci začnou přihlašovat přes Kick, objeví se tu.</div>`;
     return;
+    
   }
 
   users.forEach((u, idx) => {
