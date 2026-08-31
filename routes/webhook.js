@@ -59,8 +59,9 @@ router.post('/kick', async (req, res) => {
     return res.status(401).json({ error: 'Neplatný podpis webhooku' });
   }
 
-  const { type, data } = req.body;
-  console.log('Webhook přijat:', type);
+  const type = req.headers['kick-event-type'];
+const data = req.body;
+console.log('Webhook přijat:', type);
 
   try {
     switch (type) {
