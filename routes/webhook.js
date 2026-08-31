@@ -4,10 +4,10 @@ const router = express.Router();
 const store = require('../data/store');
 
 const CHAT_INTERVAL_SECONDS = parseInt(process.env.CHAT_INTERVAL_SECONDS || '300', 10);
-const POINTS_CHAT = parseInt(process.env.POINTS_PER_CHAT_MESSAGE || '1', 10);
-const POINTS_CHAT_SUB = parseInt(process.env.POINTS_PER_CHAT_MESSAGE_SUB || '2', 10);
-const POINTS_NEW_SUB = parseInt(process.env.POINTS_PER_NEW_SUB || '55', 10);
-const POINTS_GIFTED_SUB = parseInt(process.env.POINTS_PER_GIFTED_SUB || '55', 10);
+const POINTS_CHAT = parseInt(process.env.POINTS_PER_CHAT_MESSAGE || '10', 10);
+const POINTS_CHAT_SUB = parseInt(process.env.POINTS_PER_CHAT_MESSAGE_SUB || '20', 10);
+const POINTS_NEW_SUB = parseInt(process.env.POINTS_PER_NEW_SUB || '100', 10);
+const POINTS_GIFTED_SUB = parseInt(process.env.POINTS_PER_GIFTED_SUB || '100', 10);
 
 function verifySignature(req) {
   const signature = req.headers['kick-event-signature'];

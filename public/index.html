@@ -152,10 +152,10 @@
         <div class="faq-a">
           <p>Body se počítají jen <strong>během živého streamu</strong> a jen pokud jsi přihlášený přes Kick. Konkrétně:</p>
           <ul style="margin:10px 0 0;padding-left:18px;line-height:1.8;">
-            <li>Napíšeš zprávu v chatu → <strong>+1 KK</strong> (stačí jedna zpráva za 5 minut, další zprávy ve stejném okně už nic nepřidají)</li>
-            <li>Jsi aktivní subscriber a napíšeš zprávu → <strong>+2 KK</strong> místo +1</li>
-            <li>Nový sub nebo resub → <strong>+40 KK</strong> jednorázově</li>
-            <li>Daruješ sub někomu jinému → <strong>+40 KK</strong> za každý darovaný sub (dostává je dárce)</li>
+            <li>Napíšeš zprávu v chatu → <strong>+10 KK</strong> (stačí jedna zpráva za 5 minut, další zprávy ve stejném okně už nic nepřidají)</li>
+            <li>Jsi aktivní subscriber a napíšeš zprávu → <strong>+20 KK</strong> místo +10</li>
+            <li>Nový sub nebo resub → <strong>+100 KK</strong> jednorázově</li>
+            <li>Daruješ sub někomu jinému → <strong>+100 KK</strong> za každý darovaný sub (dostává je dárce)</li>
           </ul>
         </div>
       </div>
@@ -185,6 +185,7 @@
         <h1 class="grunge">Administrace výher</h1>
         <p>Přidávej nové výhry a uprav ceny, typ nebo dostupnost. Změny se hned projeví v Shopu.</p>
       </div>
+      <button class="btn-ghost" id="adminLogoutBtn" style="max-width:160px;">Odhlásit admina</button>
     </div>
 
     <div class="admin-form" style="margin-top:28px;border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--bg-1);">
@@ -209,6 +210,13 @@
         <button class="btn-kick" id="fSubmit">Přidat výhru</button>
         <button class="btn-ghost" id="fCancelEdit" style="display:none;max-width:160px;">Zrušit úpravu</button>
       </div>
+    </div>
+
+    <div class="admin-form" style="margin-top:20px;border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--bg-1);">
+      <h3 class="disp" style="font-size:1.1rem;margin-bottom:4px;">Upravit body uživatele</h3>
+      <p class="hint" style="margin-bottom:14px;">Ruční přičtení nebo odečtení KK bodů (záporné číslo = odečíst).</p>
+      <div class="field"><label>Hledat podle jména</label><input id="pointsSearchInput" placeholder="jméno uživatele…" /></div>
+      <div id="pointsSearchResults" style="margin-top:10px;"></div>
     </div>
 
     <div id="adminList" style="margin-top:28px;"></div>

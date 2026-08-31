@@ -138,6 +138,73 @@ function initAdminForm() {
   });
 }
 
+function renderPointsSearchResults(users) {
+  const wrap = document.getElementById('pointsSearchResults');
+  wrap.innerHTML = '';
+
+  if (users.length === 0) {
+    wrap.innerHTML = `<div class="empty-state">Nikdo nenalezen.</div>`;
+    return;
+  }
+
+  users.forEach(u => {
+    const row = document.createElement('div');
+    row.className = 'points-row';
+    row.innerHTML = `
+      <div><div class="a-name">${u.username}</div><div class="a-type">aktuálně ${u.kk_points.toLocaleString('cs-CZ')} KK</div></div>
+      <input type="number" class="pts-amount" placeholder="±KK" />
+      <input type="text" class="pts-reason" placeholder="Poznámka (nepovinné)" />
+      <div class="admin-actions"><button class="a-btn" data-adjust="${u.kick_user_id}">Upravit body</button></div>
+    `;
+    wrap.appendChild(row);
+  });
+
+  wrap.querySelectorAll('[data-adjust]').forEach(btn => {
+    btn.addEventListener('click', async () => {
+      const row = btn.closest('.points-row');
+      const amount = parseInt(row.querySelector('.pts-amount').value, 10);
+      const reason = row.querySelector('.pts-reason').value.trim();
+
+      if (!amount) {
+        alert('Zadej počet KK bodů (kladné číslo přičte, záporné odečte).');
+        return;
+      }
+
+      btn.disabled = true;
+      const result = await API.adminAdjustPoints(btn.dataset.adjust, amount, reason);
+      btn.disabled = false;
+
+      if (!result.ok) {
+        alert(result.error || 'Úprava bodů se nezdařila.');
+        return;
+      }
+
+      const input = document.getElementById('pointsSearchInput');
+      const users = await API.adminSearchUsers(input.value.trim());
+      renderPointsSearchResults(users);
+      renderLeaderboard(document.getElementById('searchInput').value);
+    });
+  });
+}
+
+function initAdminPointsSearch() {
+  const input = document.getElementById('pointsSearchInput');
+  let debounce = null;
+
+  input.addEventListener('input', () => {
+    clearTimeout(debounce);
+    const q = input.value.trim();
+    if (!q) {
+      document.getElementById('pointsSearchResults').innerHTML = '';
+      return;
+    }
+    debounce = setTimeout(async () => {
+      const users = await API.adminSearchUsers(q);
+      renderPointsSearchResults(users);
+    }, 300);
+  });
+}
+
 function initAdminLogin() {
   const overlay = document.getElementById('adminModalOverlay');
 
@@ -155,5 +222,26 @@ function initAdminLogin() {
     } else {
       document.getElementById('adminError').classList.add('show');
     }
+  });
+}
+
+// Po načtení stránky zjistí, jestli je admin session (cookie) pořád
+// platná, a pokud ano, rovnou zobrazí záložku Administrace - není
+// potřeba se po refreshi znovu přihlašovat.
+async function initAdminAuthStatus() {
+  const isAdmin = await API.adminStatus();
+  const adminTab = document.getElementById('adminTab');
+  if (isAdmin) {
+    adminTab.style.display = 'inline-block';
+    renderAdminList();
+  }
+}
+
+function initAdminLogout() {
+  document.getElementById('adminLogoutBtn').addEventListener('click', async () => {
+    await API.adminLogout();
+    document.getElementById('adminTab').style.display = 'none';
+    document.getElementById('adminTab').classList.remove('active');
+    document.querySelector('.tab[data-view="leaderboard"]').click();
   });
 }

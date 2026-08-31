@@ -215,6 +215,19 @@
   .admin-row .a-price{font-family:'Space Grotesk';font-weight:700;color:var(--kk);font-size:.9rem;}
   .admin-row .a-stock{font-size:.78rem;color:var(--text-1);}
   .admin-actions{display:flex;gap:8px;justify-content:flex-end;}
+
+  .points-row{
+    display:grid;grid-template-columns:1fr 110px 170px auto;align-items:center;gap:10px;
+    padding:12px 4px;border-bottom:1px solid var(--line);
+  }
+  .points-row .a-name{font-weight:600;font-size:.92rem;}
+  .points-row .a-type{font-size:.74rem;color:var(--text-2);}
+  .points-row input{
+    width:100%;background:var(--bg-2);border:1px solid var(--line-strong);color:var(--text-0);
+    border-radius:8px;padding:8px 10px;font-size:.82rem;
+  }
+  .points-row input:focus{border-color:var(--kk);}
+  @media (max-width:640px){ .points-row{grid-template-columns:1fr;} }
   .a-btn{background:none;border:1px solid var(--line-strong);color:var(--text-1);padding:6px 12px;border-radius:100px;font-size:.75rem;cursor:pointer;}
   .a-btn:hover{color:var(--text-0);border-color:var(--text-0);}
   .a-btn.danger:hover{color:#ff6b6b;border-color:#ff6b6b;}

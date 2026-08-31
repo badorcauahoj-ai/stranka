@@ -50,6 +50,18 @@ const API = {
     return res.ok;
   },
 
+  async adminStatus() {
+    const res = await fetch('/api/admin/me');
+    if (!res.ok) return false;
+    const data = await res.json();
+    return Boolean(data.is_admin);
+  },
+
+  async adminLogout() {
+    const res = await fetch('/api/admin/logout', { method: 'POST' });
+    return res.ok;
+  },
+
   async adminUploadImage(file) {
     const formData = new FormData();
     formData.append('image', file);
@@ -84,5 +96,22 @@ const API = {
   async adminDeleteItem(id) {
     const res = await fetch('/api/admin/items/' + id, { method: 'DELETE' });
     return res.ok;
+  },
+
+  async adminSearchUsers(q) {
+    const res = await fetch('/api/admin/users/search?q=' + encodeURIComponent(q));
+    if (!res.ok) return [];
+    const data = await res.json();
+    return data.users || [];
+  },
+
+  async adminAdjustPoints(kick_user_id, amount, reason) {
+    const res = await fetch('/api/admin/points/adjust', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kick_user_id, amount, reason }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, ...data };
   },
 };

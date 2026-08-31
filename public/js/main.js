@@ -4,7 +4,9 @@ document.addEventListener('DOMContentLoaded', () => {
   initAshParticles();
   initAdminModal();
   initAdminLogin();
+  initAdminLogout();
   initAdminForm();
+  initAdminPointsSearch();
   initImageUpload();
   initShopFilters();
   initKickLogout();
@@ -16,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   initKickAuthStatus();
+  initAdminAuthStatus();
   renderLeaderboard();
   renderYourStats();
   renderShop();

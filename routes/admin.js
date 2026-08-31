@@ -32,6 +32,10 @@ router.post('/upload', requireAdmin, (req, res) => {
   });
 });
 
+router.get('/me', (req, res) => {
+  res.json({ is_admin: Boolean(req.session.is_admin) });
+});
+
 router.post('/login', (req, res) => {
   const { username, password } = req.body;
   const validUser = process.env.ADMIN_USERNAME || 'admin';
@@ -52,6 +56,29 @@ router.post('/login', (req, res) => {
 router.post('/logout', (req, res) => {
   req.session.is_admin = false;
   res.json({ ok: true });
+});
+
+// Ruční úprava KK bodů konkrétnímu uživateli z administrace
+// (přičtení i odečtení - záporná částka body odečte).
+router.get('/users/search', requireAdmin, async (req, res, next) => {
+  try {
+    const q = (req.query.q || '').trim();
+    if (!q) return res.json({ ok: true, users: [] });
+    const users = await store.getLeaderboard(q);
+    res.json({ ok: true, users: users.slice(0, 20) });
+  } catch (err) { next(err); }
+});
+
+router.post('/points/adjust', requireAdmin, async (req, res, next) => {
+  try {
+    const { kick_user_id, amount, reason } = req.body;
+    const amt = parseInt(amount, 10);
+    if (!kick_user_id || !amt) {
+      return res.status(400).json({ error: 'Chybí uživatel nebo neplatná částka' });
+    }
+    await store.addPoints(kick_user_id, amt, 'admin_adjust', reason ? { note: reason } : null);
+    res.json({ ok: true });
+  } catch (err) { next(err); }
 });
 
 router.post('/items', requireAdmin, async (req, res, next) => {
