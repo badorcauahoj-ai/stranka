@@ -92,6 +92,47 @@ async function deleteShopItem(id) {
   await pool.query('DELETE FROM shop_items WHERE id = $1', [id]);
 }
 
+// Vrátí lístky pro kolo štěstí - každý kus koupeného losování
+// = jeden lístek (kolik koupil, tolikrát tam je). Nese i kick_user_id,
+// ať jde po výhře přesně dohledat, který nákup se má odebrat.
+async function getItemTickets(itemId) {
+  const { rows } = await pool.query(
+    `SELECT u.kick_user_id, u.username, p.quantity
+       FROM purchases p
+       JOIN users u ON u.kick_user_id = p.kick_user_id
+      WHERE p.item_id = $1
+      ORDER BY p.created_at ASC`,
+    [itemId]
+  );
+  const tickets = [];
+  rows.forEach(r => {
+    for (let i = 0; i < r.quantity; i++) {
+      tickets.push({ kick_user_id: r.kick_user_id, username: r.username });
+    }
+  });
+  return tickets;
+}
+
+// Odebere jeden lístek vítězi (o 1 sníží quantity nejnovějšího nákupu
+// dané osoby na danou položku, nebo nákup smaže, pokud mu zbýval jen 1).
+async function removeOneTicket(itemId, kickUserId) {
+  const { rows } = await pool.query(
+    `SELECT id, quantity FROM purchases
+      WHERE item_id = $1 AND kick_user_id = $2
+      ORDER BY created_at DESC LIMIT 1`,
+    [itemId, kickUserId]
+  );
+  const purchase = rows[0];
+  if (!purchase) return false;
+
+  if (purchase.quantity > 1) {
+    await pool.query('UPDATE purchases SET quantity = quantity - 1 WHERE id = $1', [purchase.id]);
+  } else {
+    await pool.query('DELETE FROM purchases WHERE id = $1', [purchase.id]);
+  }
+  return true;
+}
+
 async function buyItem(kick_user_id, item_id, quantity) {
   const client = await pool.connect();
   try {
@@ -176,6 +217,8 @@ module.exports = {
   createShopItem,
   updateShopItem,
   deleteShopItem,
+  getItemTickets,
+  removeOneTicket,
   buyItem,
   getInventory,
   hasChatIntervalPassed,

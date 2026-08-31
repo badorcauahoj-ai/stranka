@@ -114,4 +114,20 @@ const API = {
     const data = await res.json().catch(() => ({}));
     return { ok: res.ok, ...data };
   },
+
+  async adminGetItemTickets(itemId) {
+    const res = await fetch('/api/admin/items/' + itemId + '/tickets');
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, ...data };
+  },
+
+  async adminRemoveTicket(itemId, kickUserId) {
+    const res = await fetch('/api/admin/items/' + itemId + '/tickets/remove', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ kick_user_id: kickUserId }),
+    });
+    const data = await res.json().catch(() => ({}));
+    return { ok: res.ok, ...data };
+  },
 };

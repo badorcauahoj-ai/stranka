@@ -108,4 +108,24 @@ router.delete('/items/:id', requireAdmin, async (req, res, next) => {
   } catch (err) { next(err); }
 });
 
+// Lístky pro kolo štěstí - jedno jméno na koupený kus daného losování.
+router.get('/items/:id/tickets', requireAdmin, async (req, res, next) => {
+  try {
+    const tickets = await store.getItemTickets(parseInt(req.params.id, 10));
+    res.json({ ok: true, tickets });
+  } catch (err) { next(err); }
+});
+
+// Odebere vítězi jeden lístek na danou položku (aby nešel vylosovat znovu).
+router.post('/items/:id/tickets/remove', requireAdmin, async (req, res, next) => {
+  try {
+    const { kick_user_id } = req.body;
+    if (!kick_user_id) return res.status(400).json({ error: 'Chybí kick_user_id' });
+    const removed = await store.removeOneTicket(parseInt(req.params.id, 10), kick_user_id);
+    if (!removed) return res.status(404).json({ error: 'Lístek nenalezen' });
+    const tickets = await store.getItemTickets(parseInt(req.params.id, 10));
+    res.json({ ok: true, tickets });
+  } catch (err) { next(err); }
+});
+
 module.exports = router;

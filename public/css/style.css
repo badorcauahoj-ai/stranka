@@ -470,3 +470,37 @@
 @media (max-width:640px){
   #toastWrap{left:16px;right:16px;bottom:16px;max-width:none;}
 }
+
+/* ---------- ADMIN: KOLO ŠTĚSTÍ ---------- */
+.wheel-meta{font-size:.86rem;color:var(--text-1);margin-bottom:20px;}
+.wheel-meta strong{color:var(--text-0);}
+.wheel-wrap{
+  width:340px;max-width:88vw;position:relative;margin:0 auto 22px;
+}
+#wheelCanvas{
+  width:100%;height:auto;border-radius:50%;
+  border:1px solid var(--line-strong);
+  transition:transform 4.6s cubic-bezier(.14,.85,.13,1);
+}
+.wheel-pointer{
+  position:absolute;left:50%;top:-4px;transform:translateX(-50%);
+  width:0;height:0;z-index:2;
+  border-left:12px solid transparent;border-right:12px solid transparent;
+  border-top:20px solid var(--kk);
+}
+.wheel-hub{
+  position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:16px;height:16px;border-radius:50%;background:var(--kk);
+  box-shadow:0 0 0 4px var(--bg-1);
+}
+.wheel-result{
+  display:none;margin-top:22px;text-align:center;
+  border:1px solid var(--line-strong);background:var(--bg-2);
+  border-radius:14px;padding:20px 24px;max-width:340px;
+}
+.wheel-result.show{display:block;animation:fadeUp .3s var(--ease) both;}
+.wheel-result-label{font-size:.72rem;text-transform:uppercase;letter-spacing:.06em;color:var(--text-2);margin-bottom:6px;}
+.wheel-winner{font-family:'Bebas Neue',sans-serif;font-size:1.8rem;letter-spacing:.02em;color:var(--kk);}
+.wheel-result-actions{display:flex;gap:10px;margin-top:16px;}
+.wheel-result-actions .btn-kick,.wheel-result-actions .btn-ghost{max-width:none;flex:1;}
+.wheel-status{font-size:.76rem;color:var(--text-1);margin-top:10px;min-height:1em;}

@@ -49,6 +49,7 @@
     <button class="tab" data-view="inventory">Inventář</button>
     <button class="tab" data-view="faq">Jak to funguje</button>
     <button class="tab" data-view="admin" id="adminTab" style="display:none;">Administrace</button>
+    <button class="tab" data-view="distribuce" id="distribuceTab" style="display:none;">Distribuce</button>
   </div>
   <div class="nav-right">
     <button class="btn-admin" id="openAdminBtn">Admin</button>
@@ -240,6 +241,27 @@
     <div id="adminList" style="margin-top:28px;"></div>
   </section>
 
+  <!-- DISTRIBUCE -->
+  <section class="view" id="view-distribuce">
+    <div class="lb-head">
+      <div>
+        <h1 class="grunge">Distribuce výher</h1>
+        <p>Vyber losování a roztoč kolo štěstí — natáhnou se do něj všichni, kdo si na něj koupili lístek.</p>
+      </div>
+    </div>
+
+    <div class="admin-form" style="margin-top:28px;border:1px solid var(--line);border-radius:16px;padding:22px;background:var(--bg-1);">
+      <div style="display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end;">
+        <div class="field" style="flex:1;min-width:220px;margin-bottom:0;">
+          <label>Losování</label>
+          <select id="wheelItemSelect"></select>
+        </div>
+        <button class="btn-kick" id="wheelLoadBtn" style="max-width:200px;">Načíst lístky</button>
+      </div>
+      <div id="wheelArea" style="display:none;margin-top:24px;"></div>
+    </div>
+  </section>
+
 </main>
 
 <div class="partner-strip">
@@ -276,6 +298,7 @@
 <script src="/js/shop.js"></script>
 <script src="/js/inventory.js"></script>
 <script src="/js/admin.js"></script>
+<script src="/js/wheel.js"></script>
 <script src="/js/main.js"></script>
 </body>
 </html>

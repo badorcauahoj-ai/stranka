@@ -7,6 +7,8 @@ document.addEventListener('DOMContentLoaded', () => {
   initAdminLogout();
   initAdminForm();
   initAdminPointsSearch();
+  initAdminWheel();
+  populateWheelItemSelect();
   initImageUpload();
   initShopFilters();
   initItemModal();

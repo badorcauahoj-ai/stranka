@@ -37,6 +37,7 @@ async function renderAdminList() {
       await API.adminDeleteItem(+b.dataset.del);
       renderAdminList();
       renderShop();
+      populateWheelItemSelect();
     });
   });
 }
@@ -138,6 +139,7 @@ function initAdminForm() {
     resetForm();
     renderAdminList();
     renderShop();
+    populateWheelItemSelect();
     showToast(wasEditing ? 'Výhra upravena.' : 'Výhra přidána.');
   });
 }
@@ -222,8 +224,10 @@ function initAdminLogin() {
       overlay.classList.remove('open');
       document.getElementById('adminError').classList.remove('show');
       document.getElementById('adminTab').style.display = 'inline-block';
+      document.getElementById('distribuceTab').style.display = 'inline-block';
       document.getElementById('adminTab').click();
       renderAdminList();
+      populateWheelItemSelect();
     } else {
       document.getElementById('adminError').classList.add('show');
     }
@@ -233,8 +237,10 @@ function initAdminLogin() {
 async function initAdminAuthStatus() {
   const isAdmin = await API.adminStatus();
   const adminTab = document.getElementById('adminTab');
+  const distribuceTab = document.getElementById('distribuceTab');
   if (isAdmin) {
     adminTab.style.display = 'inline-block';
+    distribuceTab.style.display = 'inline-block';
     renderAdminList();
   }
 }
@@ -244,6 +250,8 @@ function initAdminLogout() {
     await API.adminLogout();
     document.getElementById('adminTab').style.display = 'none';
     document.getElementById('adminTab').classList.remove('active');
+    document.getElementById('distribuceTab').style.display = 'none';
+    document.getElementById('distribuceTab').classList.remove('active');
     document.querySelector('.tab[data-view="leaderboard"]').click();
   });
 }
