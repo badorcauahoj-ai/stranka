@@ -145,32 +145,32 @@
   .you-stat-num{font-family:'Space Grotesk';font-weight:700;font-size:1.3rem;color:var(--text-0);}
   .you-stat-label{font-size:.7rem;color:var(--text-1);margin-top:2px;}
 
-  .rank-list{margin-top:44px;}
-  .rank-row{
+  .tb69-list{margin-top:44px;}
+  .tb69-row{
     display:grid;grid-template-columns:70px 1fr auto;align-items:center;gap:18px;
     padding:20px 4px;border-bottom:1px solid var(--line);
     animation:fadeUp .6s var(--ease) both;
   }
   @keyframes fadeUp{from{opacity:0;transform:translateY(14px);}to{opacity:1;transform:translateY(0);}}
-  .rank-num{font-family:'Space Grotesk';font-weight:700;color:var(--text-2);font-size:1.4rem;letter-spacing:-.02em;}
-  .rank-row.top .rank-num{font-size:2.6rem;color:var(--text-0);}
-  .rank-row.top2 .rank-num{color:var(--gold);}
-  .r-main{display:flex;align-items:center;gap:14px;min-width:0;}
-  .r-avatar{
+  .tb69-num{font-family:'Space Grotesk';font-weight:700;color:var(--text-2);font-size:1.4rem;letter-spacing:-.02em;}
+  .tb69-row.top .tb69-num{font-size:2.6rem;color:var(--text-0);}
+  .tb69-row.top2 .tb69-num{color:var(--gold);}
+  .tb69-main{display:flex;align-items:center;gap:14px;min-width:0;}
+  .tb69-avatar{
     width:42px;height:42px;border-radius:50%;flex-shrink:0;
     background:linear-gradient(135deg,#212321,#131413);border:1px solid var(--line-strong);
     display:flex;align-items:center;justify-content:center;font-family:'Space Grotesk';font-size:.8rem;color:var(--text-1);
   }
-  img.r-avatar{
+  img.tb69-avatar{
     object-fit:cover;
   }
-  .rank-row.top .r-avatar{width:52px;height:52px;font-size:.95rem;}
-  .r-name{font-weight:600;font-size:1rem;}
-  .r-meta{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap;}
+  .tb69-row.top .tb69-avatar{width:52px;height:52px;font-size:.95rem;}
+  .tb69-name{font-weight:600;font-size:1rem;}
+  .tb69-meta{display:flex;align-items:center;gap:8px;margin-top:3px;flex-wrap:wrap;}
   .msg-tag{font-size:.75rem;color:var(--text-2);}
-  .r-kk{font-family:'Space Grotesk';font-weight:700;text-align:right;white-space:nowrap;}
-  .r-kk small{color:var(--text-2);font-weight:500;font-size:.7rem;}
-  .rank-row.top .r-kk{font-size:1.3rem;}
+  .tb69-kk{font-family:'Space Grotesk';font-weight:700;text-align:right;white-space:nowrap;}
+  .tb69-kk small{color:var(--text-2);font-weight:500;font-size:.7rem;}
+  .tb69-row.top .tb69-kk{font-size:1.3rem;}
 
   /* ---------- SHOP ---------- */
   .shop-cats{display:flex;gap:10px;margin-top:28px;flex-wrap:wrap;}
