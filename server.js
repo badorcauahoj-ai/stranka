@@ -11,7 +11,7 @@ app.use(express.json({
 }));
 app.use(cookieSession({
   name: 'session',
-  secret: process.env.SESSION_SECRET || 'dev-secret-zmen-v-produkci',
+  secret: process.env.SESSION_SECRET || 'CO TI JE DO TOHO KARECKU',
   maxAge: 30 * 24 * 60 * 60 * 1000,
 }));
 
