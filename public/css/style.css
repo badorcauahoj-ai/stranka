@@ -288,3 +288,92 @@
   .social-icon img{width:18px;height:18px;object-fit:contain;flex-shrink:0;}
   .social-icon span{font-family:'Space Grotesk',sans-serif;font-size:.74rem;font-weight:600;letter-spacing:.04em;color:var(--text-1);}
   .social-icon:hover span{color:var(--text-0);}
+
+/* Vlastní modal místo native alert() */
+.kk-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s ease;
+}
+
+.kk-modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.kk-modal-box {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  padding: 28px 30px;
+  max-width: 380px;
+  width: 90%;
+  text-align: center;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.6);
+  transform: translateY(12px) scale(0.97);
+  transition: transform 0.2s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.kk-modal-overlay.show .kk-modal-box {
+  transform: translateY(0) scale(1);
+}
+
+.kk-modal-box::before {
+  content: "";
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #888, transparent);
+}
+
+.kk-modal-icon {
+  font-size: 32px;
+  display: block;
+  margin-bottom: 10px;
+}
+.kk-modal-icon.error   { color: #e74c3c; }
+.kk-modal-icon.success { color: #2ecc71; }
+.kk-modal-icon.info    { color: #ccc; }
+
+.kk-modal-title {
+  font-size: 18px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: #eee;
+  margin-bottom: 8px;
+}
+
+.kk-modal-message {
+  color: #999;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 22px;
+}
+
+.kk-modal-btn {
+  background: #eee;
+  color: #111;
+  border: none;
+  padding: 10px 28px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.kk-modal-btn:hover {
+  transform: translateY(-1px);
+  background: #fff;
+}
