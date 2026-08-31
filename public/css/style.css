@@ -377,3 +377,61 @@
   transform: translateY(-1px);
   background: #fff;
 }
+
+
+.item-card { cursor: pointer; }
+
+.item-modal {
+  max-width: 420px;
+  text-align: left;
+  position: relative;
+}
+
+.modal-close {
+  position: absolute;
+  top: 14px;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--text-1);
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+  padding: 4px;
+}
+.modal-close:hover { color: var(--text-0); }
+
+.item-modal-thumb {
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  max-height: 220px;
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--bg-1);
+  border: 1px solid var(--line);
+  margin-bottom: 16px;
+}
+.item-modal-thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+
+.item-modal-type {
+  font-size: .72rem;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+  color: var(--text-2);
+  margin-bottom: 4px;
+}
+.item-modal-name { margin-bottom: 10px; }
+.item-modal-desc { color: var(--text-1); font-size: .9rem; line-height: 1.6; margin-bottom: 20px; }
+
+.item-modal-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+}
+.item-modal-price { font-family: 'Bebas Neue', sans-serif; font-size: 1.4rem; color: var(--text-0); }
+
+
+
+
+
