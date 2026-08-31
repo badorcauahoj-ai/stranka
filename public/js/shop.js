@@ -13,6 +13,7 @@ async function renderShop() {
   filtered.forEach(i => {
     const card = document.createElement('div');
     card.className = 'item-card';
+    card.dataset.itemId = i.id;
     card.innerHTML = `
       <div class="item-thumb">${thumbHtml(i.img)}</div>
       <div class="item-name">${i.name}</div>
@@ -24,33 +25,55 @@ async function renderShop() {
     `;
     grid.appendChild(card);
   });
+
   grid.querySelectorAll('[data-buy]').forEach(btn => {
-    btn.addEventListener('click', () => buyItem(+btn.dataset.buy));
+    btn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      buyItem(+btn.dataset.buy);
+    });
+  });
+
+  grid.querySelectorAll('.item-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const item = shopItemsCache.find(x => x.id === +card.dataset.itemId);
+      if (item) openItemModal(item);
+    });
+  });
+}
+
+function openItemModal(item) {
+  document.getElementById('itemModalThumb').innerHTML = thumbHtml(item.img);
+  document.getElementById('itemModalType').textContent =
+    item.type + (item.type === 'Losování' ? ' · lze koupit vícekrát' : '');
+  document.getElementById('itemModalName').textContent = item.name;
+  document.getElementById('itemModalDesc').textContent =
+    item.description && item.description.trim() ? item.description : 'Bez popisu.';
+  document.getElementById('itemModalPrice').textContent =
+    item.price.toLocaleString('cs-CZ') + ' KK';
+
+  document.getElementById('itemModalBuy').onclick = () => buyItem(item.id);
+  document.getElementById('itemModalOverlay').classList.add('open');
+}
+
+function closeItemModal() {
+  document.getElementById('itemModalOverlay').classList.remove('open');
+}
+
+function initItemModal() {
+  document.getElementById('itemModalClose').addEventListener('click', closeItemModal);
+  document.getElementById('itemModalOverlay').addEventListener('click', (e) => {
+    if (e.target.id === 'itemModalOverlay') closeItemModal();
   });
 }
 
 async function buyItem(id) {
   const result = await API.buyItem(id, 1);
-
   if (!result.ok) {
-    if (result.status === 401) {
-      kkAlert('Pro nákup se musíš nejdřív přihlásit přes Kick.', {
-        title: 'Nejsi přihlášený',
-        type: 'error'
-      });
-    } else {
-      kkAlert(result.error || 'Zkontroluj, že máš dost KK bodů.', {
-        title: 'Nákup se nezdařil',
-        type: 'error'
-      });
-    }
+    alert(result.error || 'Nákup se nezdařil. Zkontroluj, že jsi přihlášený a máš dost KK.');
     return;
   }
-
-  kkAlert('Výhra je teď v tvém inventáři.', {
-    title: 'Nákup proběhl úspěšně',
-    type: 'success'
-  });
+  closeItemModal();
+  alert('Nákup proběhl úspěšně!');
   renderShop();
   renderYourStats();
 }
