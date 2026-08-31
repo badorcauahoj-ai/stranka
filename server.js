@@ -7,6 +7,12 @@ const { initSchema } = require('./db/pool');
 const app = express();
 
 app.use(express.json({
+  // Obrázky výher se posílají jako base64 přímo v JSON těle (žádný
+  // souborový storage), takže defaultní limit Expressu (100kb) by
+  // u větších fotek padal na PayloadTooLargeError. Multer dovoluje
+  // soubor do 3 MB, base64 z něj je zhruba o třetinu větší, takže
+  // dáváme rezervu na 5 MB.
+  limit: '5mb',
   verify: (req, res, buf) => { req.rawBody = buf; },
 }));
 app.use(cookieSession({
