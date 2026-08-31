@@ -41,6 +41,9 @@ router.post('/kick', express.json({
           is_subscriber: Boolean(data.sender.is_subscriber),
         });
 
+        // Pocet zprav se pocita za kazdou zpravu bez ohledu na interval body.
+        await store.incrementMessageCount(uid);
+
         const bucket = Math.floor(Date.now() / 1000 / CHAT_INTERVAL_SECONDS);
         const isNewInterval = await store.hasChatIntervalPassed(uid, bucket);
         if (!isNewInterval) return res.json({ ok: true, awarded: 0 });

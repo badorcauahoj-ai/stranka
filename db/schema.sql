@@ -5,9 +5,14 @@ CREATE TABLE IF NOT EXISTS users (
   is_subscriber BOOLEAN DEFAULT FALSE,
   kk_points INTEGER DEFAULT 0,
   sub_streak INTEGER DEFAULT 0,
+  message_count INTEGER DEFAULT 0,
   created_at TIMESTAMPTZ DEFAULT now(),
   updated_at TIMESTAMPTZ DEFAULT now()
 );
+
+-- Bezpecne doplneni sloupce i pro uz existujici databazi (starsi nasazeni),
+-- kde tabulka users uz existovala pred pridanim message_count.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS message_count INTEGER DEFAULT 0;
 
 CREATE TABLE IF NOT EXISTS chat_intervals (
   id SERIAL PRIMARY KEY,

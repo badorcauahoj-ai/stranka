@@ -31,12 +31,19 @@ async function addPoints(kick_user_id, amount, reason = 'manual_adjust', meta = 
   );
 }
 
+async function incrementMessageCount(kick_user_id) {
+  await pool.query(
+    'UPDATE users SET message_count = message_count + 1, updated_at = now() WHERE kick_user_id = $1',
+    [kick_user_id]
+  );
+}
+
 async function getLeaderboard(search = '') {
   const { rows } = await pool.query(
     search
-      ? `SELECT kick_user_id, username, avatar_url, is_subscriber, kk_points, sub_streak
+      ? `SELECT kick_user_id, username, avatar_url, is_subscriber, kk_points, message_count
          FROM users WHERE username ILIKE $1 ORDER BY kk_points DESC LIMIT 200`
-      : `SELECT kick_user_id, username, avatar_url, is_subscriber, kk_points, sub_streak
+      : `SELECT kick_user_id, username, avatar_url, is_subscriber, kk_points, message_count
          FROM users ORDER BY kk_points DESC LIMIT 200`,
     search ? [`%${search}%`] : []
   );
@@ -161,6 +168,7 @@ module.exports = {
   findUser,
   upsertUser,
   addPoints,
+  incrementMessageCount,
   getLeaderboard,
   getRank,
   getShopItems,

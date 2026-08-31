@@ -1,11 +1,3 @@
-function tierOf(kk) {
-  if (kk >= 13000) return ['legend', 'Legend'];
-  if (kk >= 9000) return ['diamond', 'Diamond'];
-  if (kk >= 5000) return ['gold', 'Gold'];
-  if (kk >= 3000) return ['silver', 'Silver'];
-  return ['bronze', 'Bronze'];
-}
-
 function initials(name) {
   return name.replace(/[^a-zA-Z0-9]/g, ' ').trim().split(' ').filter(Boolean)
     .slice(0, 2).map(s => s[0].toUpperCase()).join('') || name[0].toUpperCase();
@@ -25,7 +17,7 @@ async function renderLeaderboard(filter = '') {
 
   users.forEach((u, idx) => {
     const rank = idx + 1;
-    const [tierClass, tierLabel] = tierOf(u.kk_points);
+    const messageCount = u.message_count || 0;
     const row = document.createElement('div');
     row.className = 'rank-row' + (rank === 1 ? ' top' : '') + (rank === 2 || rank === 3 ? ' top2' : '');
     row.style.animationDelay = (Math.min(rank, 12) * 0.03) + 's';
@@ -36,8 +28,7 @@ async function renderLeaderboard(filter = '') {
         <div>
           <div class="r-name">${u.username}</div>
           <div class="r-meta">
-            <span class="tier-tag tier-${tierClass}">${tierLabel}</span>
-            <span class="sub-flame">${u.sub_streak || 0} sub streak</span>
+            <span class="msg-tag">${messageCount.toLocaleString('cs-CZ')} ${messageCount === 1 ? 'zpráva' : (messageCount >= 2 && messageCount <= 4 ? 'zprávy' : 'zpráv')}</span>
           </div>
         </div>
       </div>
@@ -50,18 +41,17 @@ async function renderLeaderboard(filter = '') {
 async function renderYourStats() {
   const me = await API.getMe();
   const statsEl = document.getElementById('yourStats');
-  const labelEl = document.getElementById('yourProgressLabel');
-  const fillEl = document.getElementById('yourProgressFill');
+  const messagesEl = document.getElementById('yourMessages');
+  const pointsEl = document.getElementById('yourPoints');
 
   if (!me) {
     statsEl.textContent = '— · 0 KK';
-    labelEl.textContent = 'Přihlas se přes Kick pro zobrazení postupu';
-    fillEl.style.width = '0%';
+    messagesEl.textContent = '0';
+    pointsEl.textContent = '0';
     return;
   }
 
   statsEl.textContent = `#${me.rank || '—'} · ${me.kk_points.toLocaleString('cs-CZ')} KK`;
-  const [, tierLabel] = tierOf(me.kk_points);
-  labelEl.textContent = `Tier: ${tierLabel}`;
-  fillEl.style.width = Math.min(100, (me.kk_points % 4000) / 40) + '%';
+  messagesEl.textContent = (me.message_count || 0).toLocaleString('cs-CZ');
+  pointsEl.textContent = me.kk_points.toLocaleString('cs-CZ');
 }
