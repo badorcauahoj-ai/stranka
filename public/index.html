@@ -47,7 +47,7 @@
     <button class="tab active" data-view="leaderboard">Leaderboard</button>
     <button class="tab" data-view="shop">Shop</button>
     <button class="tab" data-view="inventory">Inventář</button>
-    <button class="tab" data-view="faq">FAQ</button>
+    <button class="tab" data-view="faq">Jak to funguje</button>
     <button class="tab" data-view="admin" id="adminTab" style="display:none;">Administrace</button>
   </div>
   <div class="nav-right">
@@ -134,26 +134,46 @@
     <div class="inv-grid" id="invGrid"></div>
   </section>
 
-  <!-- FAQ -->
+  <!-- JAK TO FUNGUJE -->
   <section class="view" id="view-faq">
     <div class="lb-head">
       <div>
-        <h1 class="grunge">FAQ</h1>
-        <p>Nejčastější otázky ke KK bodům a shopu.</p>
+        <h1 class="grunge">Jak to funguje</h1>
+        <p>Co je tahle stránka, jak se počítají KK body a za co je dostaneš.</p>
       </div>
     </div>
     <div style="margin-top:24px;">
       <div class="faq-item">
-        <div class="faq-q">Jak získám KK body?<span class="plus">+</span></div>
-        <div class="faq-a"><p>Body se připisují za čas strávený sledováním streamu, aktivní sub a psaní v chatu. Přihlaš se přes Kick, aby se ti body počítaly.</p></div>
+        <div class="faq-q">Co je tahle stránka?<span class="plus">+</span></div>
+        <div class="faq-a"><p>Komunitní žebříček pro diváky streamu <strong>tyblaho69</strong> na Kicku. Aktivitou v chatu během živého streamu sbíráš body <strong>KK</strong>, které pak můžeš utratit v Shopu za losování nebo rovnou za odměny. Přihlásíš se přes svůj Kick účet a appka ti sama počítá zprávy a body.</p></div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">Kdy se žebříček resetuje?<span class="plus">+</span></div>
-        <div class="faq-a"><p>Na konci každé sezóny. Aktuálně běží Season 3, KK se poté z části převádí do nové sezóny podle tieru.</p></div>
+        <div class="faq-q">Jak přesně získám KK body?<span class="plus">+</span></div>
+        <div class="faq-a">
+          <p>Body se počítají jen <strong>během živého streamu</strong> a jen pokud jsi přihlášený přes Kick. Konkrétně:</p>
+          <ul style="margin:10px 0 0;padding-left:18px;line-height:1.8;">
+            <li>Napíšeš zprávu v chatu → <strong>+1 KK</strong> (stačí jedna zpráva za 5 minut, další zprávy ve stejném okně už nic nepřidají)</li>
+            <li>Jsi aktivní subscriber a napíšeš zprávu → <strong>+2 KK</strong> místo +1</li>
+            <li>Nový sub nebo resub → <strong>+40 KK</strong> jednorázově</li>
+            <li>Daruješ sub někomu jinému → <strong>+40 KK</strong> za každý darovaný sub (dostává je dárce)</li>
+          </ul>
+        </div>
       </div>
       <div class="faq-item">
-        <div class="faq-q">Co se stane po nákupu losování?<span class="plus">+</span></div>
-        <div class="faq-a"><p>Tiket se přičte do tvého inventáře a vylosování proběhne živě na streamu — čím víc tiketů, tím vyšší šance.</p></div>
+        <div class="faq-q">Proč mi za spam v chatu nepřibývají body pořád?<span class="plus">+</span></div>
+        <div class="faq-a"><p>Aby se dalo bodovat spravedlivě, počítá se z každého 5minutového úseku streamu jen první zpráva. Psát víc zpráv za sebou body nezrychlí — ale počet zpráv v tvém profilu se počítá pořád, i ty navíc.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Co znamená číslo u mého jména v žebříčku?<span class="plus">+</span></div>
+        <div class="faq-a"><p>U každého v žebříčku vidíš celkový počet zpráv v chatu a aktuální KK body. Pořadí v žebříčku se řadí podle KK bodů.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Jak funguje Shop?<span class="plus">+</span></div>
+        <div class="faq-a"><p>V Shopu jsou dva typy položek. <strong>Losování</strong> můžeš koupit i vícekrát — každý nákup je jeden tiket a zvyšuje tvoji šanci na výhru, která se losuje živě na streamu. <strong>Okamžité položky</strong> se ti po zaplacení KK rovnou přičtou do Inventáře, žádné losování.</p></div>
+      </div>
+      <div class="faq-item">
+        <div class="faq-q">Kde vidím, co jsem si koupil?<span class="plus">+</span></div>
+        <div class="faq-a"><p>V záložce Inventář — najdeš tam všechno, co sis kdy v Shopu koupil, včetně toho, jestli losování ještě čeká na vyhodnocení.</p></div>
       </div>
     </div>
   </section>
