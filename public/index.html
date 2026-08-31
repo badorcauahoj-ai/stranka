@@ -74,6 +74,20 @@
   </div>
 </div>
 
+<div class="modal-overlay" id="itemModalOverlay">
+  <div class="modal item-modal">
+    <button class="modal-close" id="itemModalClose" aria-label="Zavřít">&times;</button>
+    <div class="item-modal-thumb" id="itemModalThumb"></div>
+    <div class="item-modal-type" id="itemModalType"></div>
+    <h3 class="disp item-modal-name" id="itemModalName"></h3>
+    <p class="item-modal-desc" id="itemModalDesc"></p>
+    <div class="item-modal-footer">
+      <div class="item-modal-price" id="itemModalPrice"></div>
+      <button class="btn-kick" id="itemModalBuy">Koupit</button>
+    </div>
+  </div>
+</div>
+
 <main>
 
   <!-- LEADERBOARD -->
@@ -205,6 +219,10 @@
           <div id="fImgUploading" style="display:none;font-size:.75rem;color:var(--text-1);margin-top:6px;">Nahrávám…</div>
         </div>
         <div class="field"><label>Sklad (prázdné = neomezeno)</label><input id="fStock" type="number" placeholder="10" /></div>
+        <div class="field" style="grid-column:1/-1;">
+          <label>Popis</label>
+          <textarea id="fDescription" rows="3" placeholder="Krátký popis výhry, co obsahuje, podmínky…"></textarea>
+        </div>
       </div>
       <div style="display:flex;gap:10px;margin-top:8px;">
         <button class="btn-kick" id="fSubmit">Přidat výhru</button>
