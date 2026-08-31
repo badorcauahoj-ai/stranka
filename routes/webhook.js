@@ -24,7 +24,15 @@ function verifySignature(req) {
   const timestamp = req.headers['kick-event-message-timestamp'];
   const signature = req.headers['kick-event-signature'];
 
-  if (!messageId || !timestamp || !signature || !req.rawBody) return false;
+  if (!messageId || !timestamp || !signature || !req.rawBody) {
+    console.error('Webhook: chybí data pro ověření podpisu', {
+      hasMessageId: Boolean(messageId),
+      hasTimestamp: Boolean(timestamp),
+      hasSignature: Boolean(signature),
+      hasRawBody: Boolean(req.rawBody),
+    });
+    return false;
+  }
 
   const signedPayload = Buffer.concat([
     Buffer.from(`${messageId}.${timestamp}.`, 'utf8'),
@@ -32,25 +40,27 @@ function verifySignature(req) {
   ]);
 
   try {
-    return crypto.verify(
+    const valid = crypto.verify(
       'sha256',
       signedPayload,
       { key: KICK_PUBLIC_KEY, padding: crypto.constants.RSA_PKCS1_PADDING },
       Buffer.from(signature, 'base64')
     );
-  } catch {
+    if (!valid) console.error('Webhook: podpis neodpovídá');
+    return valid;
+  } catch (err) {
+    console.error('Webhook: chyba při ověřování podpisu', err);
     return false;
   }
 }
 
-router.post('/kick', express.json({
-  verify: (req, res, buf) => { req.rawBody = buf; },
-}), async (req, res) => {
+router.post('/kick', async (req, res) => {
   if (!verifySignature(req)) {
     return res.status(401).json({ error: 'Neplatný podpis webhooku' });
   }
 
   const { type, data } = req.body;
+  console.log('Webhook přijat:', type);
 
   try {
     switch (type) {
